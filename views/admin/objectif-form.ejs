@@ -1,0 +1,44 @@
+<%- include('../partials/header', { title: (typeof editing !== 'undefined' && editing) ? 'Modifier l\'objectif' : 'Nouvel objectif' }) %>
+
+<h1><%= (typeof editing !== 'undefined' && editing) ? 'Modifier l\'objectif' : 'Nouvel objectif' %></h1>
+<p class="subtitle">Joueur : <%= player.prenom %> <%= player.nom %> — apparaîtra dans l'onglet « Progression » de l'aperçu bêta.</p>
+
+<% if (error) { %>
+  <div class="alert alert-error"><%= error %></div>
+<% } %>
+
+<form method="post"
+      action="<%= (typeof editing !== 'undefined' && editing) ? '/admin/objectifs/' + objectif.id : '/admin/joueurs/' + player.id + '/objectifs' %>">
+
+  <div class="form-group">
+    <label for="titre">Objectif</label>
+    <input type="text" id="titre" name="titre" required
+           value="<%= (objectif && objectif.titre) || '' %>"
+           placeholder="ex : Améliorer le replacement défensif" />
+  </div>
+
+  <div class="form-group">
+    <label for="progression_pct">Progression (%)</label>
+    <input type="text" inputmode="numeric" id="progression_pct" name="progression_pct" placeholder="ex : 70"
+           value="<%= (objectif && objectif.progression_pct != null) ? objectif.progression_pct : '' %>" />
+  </div>
+
+  <div class="checkbox-row form-group">
+    <input type="checkbox" id="atteint" name="atteint" value="1" <%= (objectif && objectif.atteint) ? 'checked' : '' %> />
+    <label for="atteint">Objectif atteint (passera automatiquement à 100% et dans la liste « atteints »)</label>
+  </div>
+
+  <div class="actions">
+    <button type="submit" class="btn">Enregistrer</button>
+    <a class="btn btn-secondary" href="/admin/joueurs/<%= player.id %>">Annuler</a>
+  </div>
+</form>
+
+<% if (typeof editing !== 'undefined' && editing) { %>
+  <form method="post" action="/admin/objectifs/<%= objectif.id %>/supprimer"
+        data-confirm="Supprimer définitivement cet objectif ?" style="margin-top:24px;">
+    <button type="submit" class="btn btn-danger btn-small">Supprimer cet objectif</button>
+  </form>
+<% } %>
+
+<%- include('../partials/footer') %>

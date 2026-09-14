@@ -125,6 +125,20 @@
       </div>
     </div>
 
+    <h3>Progression (optionnel)</h3>
+    <div class="form-group">
+      <label for="points_forts">Points forts (un par ligne)</label>
+      <textarea id="points_forts" name="points_forts" placeholder="ex : Duels aériens&#10;Relance courte"><%= player.points_forts || '' %></textarea>
+    </div>
+    <div class="form-group">
+      <label for="axes_amelioration">Axes d'amélioration (un par ligne)</label>
+      <textarea id="axes_amelioration" name="axes_amelioration" placeholder="ex : Pied faible&#10;Vitesse de replacement"><%= player.axes_amelioration || '' %></textarea>
+    </div>
+    <div class="form-group">
+      <label for="plan_travail">Plan de travail (un par ligne)</label>
+      <textarea id="plan_travail" name="plan_travail" placeholder="ex : 2 séances techniques pied faible / semaine"><%= player.plan_travail || '' %></textarea>
+    </div>
+
     <button type="submit" class="btn btn-secondary">Enregistrer</button>
   </form>
 </div>
@@ -179,6 +193,25 @@
       <p class="card-meta">
         <%= v.theme %><% if (v.duree) { %> · <%= v.duree %><% } %><% if (!v.filename && !v.url) { %> · pas encore de vidéo attachée<% } %>
       </p>
+    </a>
+  <% }) %>
+<% } %>
+
+<h2 style="margin-top:32px;">Objectifs <span class="card-meta">(bêta — onglet « Progression »)</span></h2>
+<div class="actions" style="margin-bottom:16px;">
+  <a class="btn" href="/admin/joueurs/<%= player.id %>/objectifs/nouveau">+ Nouvel objectif</a>
+</div>
+
+<% if (typeof objectifs === 'undefined' || objectifs.length === 0) { %>
+  <div class="empty-state">
+    <p>Aucun objectif défini pour ce joueur.</p>
+    <a class="btn btn-small" href="/admin/joueurs/<%= player.id %>/objectifs/nouveau">+ Ajouter le premier</a>
+  </div>
+<% } else { %>
+  <% objectifs.forEach(o => { %>
+    <a class="card-link" href="/admin/objectifs/<%= o.id %>">
+      <p class="card-title"><%= o.titre %><% if (o.atteint) { %> <span class="badge badge-active">atteint</span><% } %></p>
+      <p class="card-meta">Progression : <%= o.progression_pct %>%</p>
     </a>
   <% }) %>
 <% } %>

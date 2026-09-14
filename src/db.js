@@ -97,10 +97,23 @@ CREATE TABLE IF NOT EXISTS videos_correctives (
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
+-- Objectifs (nouvel onglet "Progression" de l'espace joueur, bêta) : table
+-- entièrement nouvelle et indépendante, aucune table existante modifiée.
+CREATE TABLE IF NOT EXISTS objectifs (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  player_id INTEGER NOT NULL REFERENCES players(id) ON DELETE CASCADE,
+  titre TEXT NOT NULL,
+  progression_pct INTEGER NOT NULL DEFAULT 0,
+  atteint INTEGER NOT NULL DEFAULT 0,
+  created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
 CREATE INDEX IF NOT EXISTS idx_reports_player ON reports(player_id);
 CREATE INDEX IF NOT EXISTS idx_videos_report ON report_videos(report_id);
 CREATE INDEX IF NOT EXISTS idx_images_report ON report_images(report_id);
 CREATE INDEX IF NOT EXISTS idx_videos_correctives_player ON videos_correctives(player_id);
+CREATE INDEX IF NOT EXISTS idx_objectifs_player ON objectifs(player_id);
 `);
 
 // Migration légère : ajoute les colonnes manquantes sur une base déjà
@@ -140,6 +153,12 @@ ensureColumn("reports", "vitesse", "REAL");
 ensureColumn("reports", "placement", "REAL");
 ensureColumn("reports", "technique", "REAL");
 ensureColumn("reports", "relance", "REAL");
+
+// Points forts / axes d'amélioration / plan de travail (onglet "Progression",
+// bêta) : texte libre, une ligne = un élément. Toujours optionnels.
+ensureColumn("players", "points_forts", "TEXT");
+ensureColumn("players", "axes_amelioration", "TEXT");
+ensureColumn("players", "plan_travail", "TEXT");
 
 ensureColumn("report_videos", "filename", "TEXT");
 ensureColumn("report_videos", "original_name", "TEXT");

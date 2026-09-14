@@ -173,6 +173,9 @@ router.post("/joueurs", uploadPlayerFiles, (req, res) => {
     date_naissance,
     nationalite,
     pied_fort,
+    points_forts,
+    axes_amelioration,
+    plan_travail,
   } = req.body;
   if (req.uploadError || !prenom || !nom) {
     return res.status(400).render("admin/joueur-nouveau", {
@@ -199,8 +202,9 @@ router.post("/joueurs", uploadPlayerFiles, (req, res) => {
     .prepare(
       `INSERT INTO players
         (identifiant, code_hash, prenom, nom, poste, club_nom, club_pays, taille_cm, nb_matchs,
-         photo_filename, club_logo_filename, numero, date_naissance, nationalite, pied_fort, must_change_code)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)`
+         photo_filename, club_logo_filename, numero, date_naissance, nationalite, pied_fort,
+         points_forts, axes_amelioration, plan_travail, must_change_code)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)`
     )
     .run(
       identifiant,
@@ -217,7 +221,10 @@ router.post("/joueurs", uploadPlayerFiles, (req, res) => {
       numero ? parseInt(numero, 10) : null,
       date_naissance || null,
       (nationalite || "").trim(),
-      (pied_fort || "").trim()
+      (pied_fort || "").trim(),
+      (points_forts || "").trim(),
+      (axes_amelioration || "").trim(),
+      (plan_travail || "").trim()
     );
 
   res.render("admin/joueur-code", {
@@ -236,7 +243,10 @@ router.get("/joueurs/:id", (req, res) => {
   const videosCorrectives = db
     .prepare("SELECT * FROM videos_correctives WHERE player_id = ? ORDER BY created_at DESC")
     .all(player.id);
-  res.render("admin/joueur-detail", { player, reports, videosCorrectives, error: null });
+  const objectifs = db
+    .prepare("SELECT * FROM objectifs WHERE player_id = ? ORDER BY atteint ASC, created_at DESC")
+    .all(player.id);
+  res.render("admin/joueur-detail", { player, reports, videosCorrectives, objectifs, error: null });
 });
 
 router.post("/joueurs/:id", uploadPlayerFiles, (req, res) => {
@@ -250,7 +260,12 @@ router.post("/joueurs/:id", uploadPlayerFiles, (req, res) => {
     const videosCorrectives = db
       .prepare("SELECT * FROM videos_correctives WHERE player_id = ? ORDER BY created_at DESC")
       .all(player.id);
-    return res.status(400).render("admin/joueur-detail", { player, reports, videosCorrectives, error: req.uploadError });
+    const objectifs = db
+      .prepare("SELECT * FROM objectifs WHERE player_id = ? ORDER BY atteint ASC, created_at DESC")
+      .all(player.id);
+    return res
+      .status(400)
+      .render("admin/joueur-detail", { player, reports, videosCorrectives, objectifs, error: req.uploadError });
   }
 
   const {
@@ -266,6 +281,9 @@ router.post("/joueurs/:id", uploadPlayerFiles, (req, res) => {
     date_naissance,
     nationalite,
     pied_fort,
+    points_forts,
+    axes_amelioration,
+    plan_travail,
   } = req.body;
 
   const photoFile = req.files.photo && req.files.photo[0];
@@ -297,7 +315,8 @@ router.post("/joueurs/:id", uploadPlayerFiles, (req, res) => {
     `UPDATE players SET prenom = ?, nom = ?, poste = ?, actif = ?,
      club_nom = ?, club_pays = ?, taille_cm = ?, nb_matchs = ?,
      photo_filename = ?, club_logo_filename = ?,
-     numero = ?, date_naissance = ?, nationalite = ?, pied_fort = ? WHERE id = ?`
+     numero = ?, date_naissance = ?, nationalite = ?, pied_fort = ?,
+     points_forts = ?, axes_amelioration = ?, plan_travail = ? WHERE id = ?`
   ).run(
     prenom.trim(),
     nom.trim(),
@@ -313,6 +332,9 @@ router.post("/joueurs/:id", uploadPlayerFiles, (req, res) => {
     date_naissance || null,
     (nationalite || "").trim(),
     (pied_fort || "").trim(),
+    (points_forts || "").trim(),
+    (axes_amelioration || "").trim(),
+    (plan_travail || "").trim(),
     player.id
   );
   res.redirect(`/admin/joueurs/${player.id}`);
@@ -472,6 +494,24 @@ router.get("/joueurs/:id/apercu-espace-joueur", (req, res) => {
     return { label: a.label, latestFr: formatNoteFr(latest), moyenneFr: formatNoteFr(moyenne), tendance };
   }).filter(Boolean);
 
+  // ---- Onglet Progression : objectifs, points forts, axes, plan de travail ----
+
+  const objectifsBruts = db
+    .prepare("SELECT * FROM objectifs WHERE player_id = ? ORDER BY created_at DESC")
+    .all(player.id);
+  const objectifsActuels = objectifsBruts.filter((o) => !o.atteint);
+  const objectifsAtteints = objectifsBruts.filter((o) => o.atteint);
+
+  const splitLignes = (texte) =>
+    (texte || "")
+      .split("\n")
+      .map((l) => l.trim())
+      .filter((l) => l.length > 0);
+
+  const pointsForts = splitLignes(player.points_forts);
+  const axesAmelioration = splitLignes(player.axes_amelioration);
+  const planTravail = splitLignes(player.plan_travail);
+
   res.render("admin/apercu-espace-joueur", {
     player,
     age: calculerAge(player.date_naissance),
@@ -482,6 +522,11 @@ router.get("/joueurs/:id/apercu-espace-joueur", (req, res) => {
     radar,
     evolution,
     comparaison: comparaison.length ? comparaison : null,
+    objectifsActuels,
+    objectifsAtteints,
+    pointsForts,
+    axesAmelioration,
+    planTravail,
   });
 });
 
@@ -642,6 +687,79 @@ router.post("/videos-correctives/:id/supprimer", (req, res) => {
   if (video.filename) fs.rm(path.join(UPLOADS_DIR, "correctives", video.filename), { force: true }, () => {});
   db.prepare("DELETE FROM videos_correctives WHERE id = ?").run(video.id);
   res.redirect(`/admin/joueurs/${video.player_id}`);
+});
+
+// ---------- Objectifs (bêta) — alimentent l'onglet "Progression" ----------
+
+router.get("/joueurs/:id/objectifs/nouveau", (req, res) => {
+  const player = db.prepare("SELECT * FROM players WHERE id = ?").get(req.params.id);
+  if (!player) return res.status(404).render("404");
+  res.render("admin/objectif-form", { player, objectif: null, error: null, editing: false });
+});
+
+router.post("/joueurs/:id/objectifs", (req, res) => {
+  const player = db.prepare("SELECT * FROM players WHERE id = ?").get(req.params.id);
+  if (!player) return res.status(404).render("404");
+
+  const { titre, progression_pct, atteint } = req.body;
+  if (!titre || !titre.trim()) {
+    return res.status(400).render("admin/objectif-form", {
+      player,
+      objectif: req.body,
+      error: "Le titre de l'objectif est obligatoire.",
+      editing: false,
+    });
+  }
+
+  let pct = progression_pct ? parseInt(progression_pct, 10) : 0;
+  if (Number.isNaN(pct)) pct = 0;
+  pct = Math.max(0, Math.min(100, pct));
+
+  db.prepare(
+    "INSERT INTO objectifs (player_id, titre, progression_pct, atteint) VALUES (?, ?, ?, ?)"
+  ).run(player.id, titre.trim(), atteint ? 100 : pct, atteint ? 1 : 0);
+
+  res.redirect(`/admin/joueurs/${player.id}`);
+});
+
+router.get("/objectifs/:id", (req, res) => {
+  const objectif = db.prepare("SELECT * FROM objectifs WHERE id = ?").get(req.params.id);
+  if (!objectif) return res.status(404).render("404");
+  const player = db.prepare("SELECT * FROM players WHERE id = ?").get(objectif.player_id);
+  res.render("admin/objectif-form", { player, objectif, error: null, editing: true });
+});
+
+router.post("/objectifs/:id", (req, res) => {
+  const objectif = db.prepare("SELECT * FROM objectifs WHERE id = ?").get(req.params.id);
+  if (!objectif) return res.status(404).render("404");
+  const player = db.prepare("SELECT * FROM players WHERE id = ?").get(objectif.player_id);
+
+  const { titre, progression_pct, atteint } = req.body;
+  if (!titre || !titre.trim()) {
+    return res.status(400).render("admin/objectif-form", {
+      player,
+      objectif: { ...objectif, ...req.body },
+      error: "Le titre de l'objectif est obligatoire.",
+      editing: true,
+    });
+  }
+
+  let pct = progression_pct ? parseInt(progression_pct, 10) : 0;
+  if (Number.isNaN(pct)) pct = 0;
+  pct = Math.max(0, Math.min(100, pct));
+
+  db.prepare(
+    "UPDATE objectifs SET titre = ?, progression_pct = ?, atteint = ?, updated_at = datetime('now') WHERE id = ?"
+  ).run(titre.trim(), atteint ? 100 : pct, atteint ? 1 : 0, objectif.id);
+
+  res.redirect(`/admin/joueurs/${player.id}`);
+});
+
+router.post("/objectifs/:id/supprimer", (req, res) => {
+  const objectif = db.prepare("SELECT * FROM objectifs WHERE id = ?").get(req.params.id);
+  if (!objectif) return res.status(404).render("404");
+  db.prepare("DELETE FROM objectifs WHERE id = ?").run(objectif.id);
+  res.redirect(`/admin/joueurs/${objectif.player_id}`);
 });
 
 router.post("/joueurs/:id/reinitialiser-code", (req, res) => {

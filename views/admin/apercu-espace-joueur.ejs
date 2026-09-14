@@ -242,7 +242,93 @@
       </div>
     </div>
     <div class="tab-panel" id="panel-progression">
-      <p class="p-placeholder">Onglet Progression — bientôt disponible dans cet aperçu.</p>
+      <div class="p-card">
+        <p class="p-card-title">
+          Objectifs actuels
+          <% if (objectifsActuels.length) { %><span class="real-flag">données réelles</span><% } else { %><span class="example-flag">pas encore disponible</span><% } %>
+        </p>
+        <% if (objectifsActuels.length === 0) { %>
+          <p class="p-placeholder">Aucun objectif en cours pour l'instant.</p>
+        <% } else { %>
+          <% objectifsActuels.forEach(function (o) { %>
+            <div class="goal-row">
+              <div class="goal-head"><span><%= o.titre %></span><span class="pct"><%= o.progression_pct %>%</span></div>
+              <div class="goal-track"><div class="goal-fill" style="width:<%= o.progression_pct %>%;"></div></div>
+            </div>
+          <% }) %>
+        <% } %>
+      </div>
+
+      <% if (objectifsAtteints.length > 0) { %>
+        <div class="p-card">
+          <p class="p-card-title">Objectifs atteints <span class="real-flag">données réelles</span></p>
+          <div class="tag-list">
+            <% objectifsAtteints.forEach(function (o) { %>
+              <span class="tag-good">✓ <%= o.titre %></span>
+            <% }) %>
+          </div>
+        </div>
+      <% } %>
+
+      <div class="p-card">
+        <p class="p-card-title">
+          Points forts
+          <% if (pointsForts.length) { %><span class="real-flag">données réelles</span><% } else { %><span class="example-flag">pas encore disponible</span><% } %>
+        </p>
+        <% if (pointsForts.length === 0) { %>
+          <p class="p-placeholder">Pas encore renseigné.</p>
+        <% } else { %>
+          <div class="tag-list">
+            <% pointsForts.forEach(function (t) { %><span class="tag-good"><%= t %></span><% }) %>
+          </div>
+        <% } %>
+      </div>
+
+      <div class="p-card">
+        <p class="p-card-title">
+          Axes d'amélioration
+          <% if (axesAmelioration.length) { %><span class="real-flag">données réelles</span><% } else { %><span class="example-flag">pas encore disponible</span><% } %>
+        </p>
+        <% if (axesAmelioration.length === 0) { %>
+          <p class="p-placeholder">Pas encore renseigné.</p>
+        <% } else { %>
+          <div class="tag-list">
+            <% axesAmelioration.forEach(function (t) { %><span class="tag-work"><%= t %></span><% }) %>
+          </div>
+        <% } %>
+      </div>
+
+      <div class="p-card">
+        <p class="p-card-title">
+          Plan de travail
+          <% if (planTravail.length) { %><span class="real-flag">données réelles</span><% } else { %><span class="example-flag">pas encore disponible</span><% } %>
+        </p>
+        <% if (planTravail.length === 0) { %>
+          <p class="p-placeholder">Pas encore renseigné.</p>
+        <% } else { %>
+          <ul class="plan-list">
+            <% planTravail.forEach(function (t) { %><li><%= t %></li><% }) %>
+          </ul>
+        <% } %>
+      </div>
+
+      <div class="p-card">
+        <p class="p-card-title">
+          Évolution sur la saison
+          <% if (evolution) { %><span class="real-flag">données réelles</span><% } else { %><span class="example-flag">pas encore disponible</span><% } %>
+        </p>
+        <% if (evolution) { %>
+          <svg class="line-chart" viewBox="0 0 300 90" preserveAspectRatio="none">
+            <polyline points="<%= evolution.polylinePoints %>" fill="none" stroke="#22d3a8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+          <div class="p-suivi-row" style="margin-top:10px;">
+            <span class="label">Note globale (<%= evolution.count %> derniers matchs notés)</span>
+            <span class="value"><%= evolution.premiereFr %> → <%= evolution.derniereFr %></span>
+          </div>
+        <% } else { %>
+          <p class="p-placeholder">Renseigne la note globale sur au moins 2 matchs (onglet Data) pour l'activer ici aussi.</p>
+        <% } %>
+      </div>
     </div>
 
   </div>

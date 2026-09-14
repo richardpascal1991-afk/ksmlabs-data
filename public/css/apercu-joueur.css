@@ -176,6 +176,19 @@ body {
 .trend-down { color: #fca5a5; }
 .trend-flat { color: var(--text-dim); }
 
+/* ---- Progression (objectifs, points forts, plan de travail) ---- */
+.goal-row { margin-bottom: 14px; }
+.goal-row:last-child { margin-bottom: 0; }
+.goal-head { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 6px; }
+.goal-head .pct { color: var(--accent); font-weight: 700; }
+.goal-track { height: 7px; border-radius: 999px; background: #0d0f16; border: 1px solid var(--border); overflow: hidden; }
+.goal-fill { height: 100%; background: linear-gradient(90deg, var(--accent-dark), var(--accent)); border-radius: 999px; }
+.tag-list { display: flex; flex-wrap: wrap; gap: 8px; }
+.tag-good { font-size: 12px; font-weight: 600; color: #6ee7c4; background: rgba(34, 211, 168, 0.1); border: 1px solid rgba(34, 211, 168, 0.3); border-radius: 999px; padding: 5px 12px; }
+.tag-work { font-size: 12px; font-weight: 600; color: #fcd34d; background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 999px; padding: 5px 12px; }
+.plan-list { margin: 0; padding-left: 18px; font-size: 13px; color: var(--text-dim); line-height: 1.9; }
+.plan-list li::marker { color: var(--accent); }
+
 /* ---- Analyses (vidéos correctives) ---- */
 .analyse-card { padding: 16px; }
 .analyse-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; }

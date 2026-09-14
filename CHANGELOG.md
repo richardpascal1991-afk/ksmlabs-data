@@ -73,6 +73,19 @@ Fichiers modifiés : `src/db.js`, `src/routes/admin.js`, `views/admin/rapport-fo
 - Tant qu'il n'y a pas assez de matchs notés, chaque bloc affiche un message honnête expliquant ce qu'il faut renseigner pour l'activer, plutôt qu'une donnée inventée.
 - Toujours aucune route supprimée, aucune fonctionnalité retirée, aucune donnée existante modifiée.
 
+### Étape 7 — Onglet "Progression" connecté à de vraies données (aperçu bêta)
+
+Fichiers modifiés : `src/db.js`, `src/routes/admin.js`, `views/admin/joueur-detail.ejs`, `views/admin/apercu-espace-joueur.ejs`, `public/css/apercu-joueur.css`.
+Fichier ajouté : `views/admin/objectif-form.ejs`.
+
+- Base de données : nouvelle table indépendante `objectifs` (titre, % de progression, atteint ou non) et 3 nouvelles colonnes optionnelles sur `players` (`points_forts`, `axes_amelioration`, `plan_travail`, texte libre). Autorisation donnée par l'agence. Aucune table ni donnée existante modifiée ou supprimée.
+- Fiche joueur (admin) : nouvelle section "Objectifs" (ajout/modification/suppression) et 3 nouveaux champs texte libre (points forts, axes d'amélioration, plan de travail — un élément par ligne).
+- L'onglet "Progression" de l'aperçu bêta affiche désormais : les objectifs en cours avec leur barre de progression réelle, les objectifs atteints, les points forts, les axes d'amélioration, le plan de travail, et l'évolution de la note sur la saison (réutilise directement les données déjà connectées à l'étape 6, sans ressaisie).
+- Tant qu'une information n'est pas renseignée, un message honnête l'indique plutôt qu'une donnée inventée.
+- Toujours aucune route supprimée, aucune fonctionnalité retirée, aucune donnée existante modifiée.
+
+**Les 5 onglets du nouvel espace joueur (Profil, Matchs, Analyses, Data, Progression) sont maintenant tous connectés à de vraies données dans l'aperçu bêta.** L'espace joueur actuellement utilisé par les joueurs (`/joueur`) n'a à aucun moment été modifié ni remplacé : le remplacement ne se fera qu'après validation complète par l'agence.
+
 ## Version de référence (avant refonte)
 
 Point de sauvegarde correspondant à la version en ligne avant le début de la refonte (animations joueur, recadrage photo, tableau de bord avec statistiques). Commit local de sauvegarde : "backup avant refonte UI KSM LABS".
