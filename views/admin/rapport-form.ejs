@@ -54,7 +54,7 @@
       </div>
     <% }) %>
   </div>
-  <button type="button" class="btn btn-secondary btn-small" onclick="addRow('stats-rows', 'stat-row')">+ Ajouter une statistique</button>
+  <button type="button" class="btn btn-secondary btn-small" data-add-row data-container="stats-rows" data-row-class="stat-row">+ Ajouter une statistique</button>
 
   <h3 style="margin-top:28px;">Liens vidéo (Hudl, SportsCode, YouTube...)</h3>
   <div id="video-rows">
@@ -72,7 +72,7 @@
       </div>
     <% }) %>
   </div>
-  <button type="button" class="btn btn-secondary btn-small" onclick="addRow('video-rows', 'video-row')">+ Ajouter un lien vidéo</button>
+  <button type="button" class="btn btn-secondary btn-small" data-add-row data-container="video-rows" data-row-class="video-row">+ Ajouter un lien vidéo</button>
   <p class="card-meta" style="margin-top:8px;">Les liens YouTube sont intégrés directement. Les liens Hudl / SportsCode / Wyscout s'ouvrent dans un nouvel onglet.</p>
 
   <h3 style="margin-top:28px;">Vidéos déposées (fichiers)</h3>
@@ -127,20 +127,11 @@
 
 <% if (typeof editing !== 'undefined' && editing) { %>
   <form method="post" action="/admin/rapports/<%= report.id %>/supprimer"
-        onsubmit="return confirm('Supprimer définitivement ce rapport ?');" style="margin-top:24px;">
+        data-confirm="Supprimer définitivement ce rapport ?" style="margin-top:24px;">
     <button type="submit" class="btn btn-danger btn-small">Supprimer ce rapport</button>
   </form>
 <% } %>
 
-<script>
-  function addRow(containerId, rowClass) {
-    const container = document.getElementById(containerId);
-    const rows = container.querySelectorAll('.' + rowClass);
-    const last = rows[rows.length - 1];
-    const clone = last.cloneNode(true);
-    clone.querySelectorAll('input').forEach(i => (i.value = ''));
-    container.appendChild(clone);
-  }
-</script>
+<script src="/js/report-form.js" defer></script>
 
 <%- include('../partials/footer') %>

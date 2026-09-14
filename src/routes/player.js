@@ -2,7 +2,7 @@ const express = require("express");
 const bcrypt = require("bcryptjs");
 const { db } = require("../db");
 const { requirePlayer } = require("../middleware/auth");
-const { getEmbeddableVideo } = require("../utils");
+const { getEmbeddableVideo, enrichStatsForDisplay } = require("../utils");
 
 const router = express.Router();
 router.use(requirePlayer);
@@ -46,7 +46,7 @@ router.get("/rapports/:id", (req, res) => {
   const images = db
     .prepare("SELECT * FROM report_images WHERE report_id = ? ORDER BY ordre")
     .all(report.id);
-  const stats = JSON.parse(report.stats_json || "[]");
+  const stats = enrichStatsForDisplay(JSON.parse(report.stats_json || "[]"));
 
   res.render("joueur/rapport-detail", { player, report, videos, images, stats });
 });

@@ -18,11 +18,26 @@
 <% if (stats.length) { %>
   <h2>Statistiques</h2>
   <div class="card">
-    <table>
+    <div class="stat-bars">
       <% stats.forEach(s => { %>
-        <tr><th><%= s.label %></th><td><%= s.value %></td></tr>
+        <% if (s.numeric) { %>
+          <div class="stat-bar-row">
+            <div class="stat-bar-head">
+              <span class="stat-bar-label"><%= s.label %></span>
+              <span class="stat-bar-value"><span data-countup="<%= s.num %>" data-decimals="<%= s.decimals %>" data-suffix="<%= s.suffix %>">0</span></span>
+            </div>
+            <div class="stat-bar-track">
+              <div class="stat-bar-fill" data-bar-target="<%= s.pct %>"></div>
+            </div>
+          </div>
+        <% } else { %>
+          <div class="stat-plain-row">
+            <span class="stat-bar-label"><%= s.label %></span>
+            <span class="stat-bar-value"><%= s.value %></span>
+          </div>
+        <% } %>
       <% }) %>
-    </table>
+    </div>
   </div>
 <% } %>
 
@@ -68,5 +83,7 @@
     <% }) %>
   </div>
 <% } %>
+
+<script src="/js/stats-animate.js" defer></script>
 
 <%- include('../partials/footer') %>

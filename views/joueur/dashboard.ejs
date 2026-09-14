@@ -19,8 +19,8 @@
       </p>
     <% } %>
     <p class="card-meta">
-      <% if (player.taille_cm) { %><span class="badge">Taille : <%= player.taille_cm %> cm</span> <% } %>
-      <span class="badge">Matchs : <%= player.nb_matchs || 0 %></span>
+      <% if (player.taille_cm) { %><span class="badge">Taille : <span data-countup="<%= player.taille_cm %>" data-suffix=" cm">0 cm</span></span> <% } %>
+      <span class="badge">Matchs : <span data-countup="<%= player.nb_matchs || 0 %>">0</span></span>
     </p>
   </div>
 </div>
@@ -39,5 +39,7 @@
     </a>
   <% }) %>
 <% } %>
+
+<script src="/js/stats-animate.js" defer></script>
 
 <%- include('../partials/footer') %>

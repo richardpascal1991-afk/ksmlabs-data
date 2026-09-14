@@ -19,8 +19,8 @@
       </p>
     <% } %>
     <p class="card-meta">
-      <% if (player.taille_cm) { %><span class="badge">Taille : <%= player.taille_cm %> cm</span> <% } %>
-      <span class="badge">Matchs : <%= player.nb_matchs || 0 %></span>
+      <% if (player.taille_cm) { %><span class="badge">Taille : <span data-countup="<%= player.taille_cm %>" data-suffix=" cm">0 cm</span></span> <% } %>
+      <span class="badge">Matchs : <span data-countup="<%= player.nb_matchs || 0 %>">0</span></span>
     </p>
   </div>
 </div>
@@ -55,8 +55,10 @@
       </div>
     <% } %>
     <div class="form-group">
-      <label for="photo">Remplacer la photo (PNG, JPG ou WEBP)</label>
-      <input type="file" id="photo" name="photo" accept=".png,.jpg,.jpeg,.webp" />
+      <label for="photo">Remplacer la photo (PNG, JPG ou WEBP) — un outil de recadrage s'ouvre après le choix du fichier</label>
+      <input type="file" id="photo" name="photo" accept=".png,.jpg,.jpeg,.webp"
+             data-cropper data-cropper-preview="#photo-preview" />
+      <img id="photo-preview" alt="Aperçu de la photo recadrée" style="display:none;margin-top:10px;width:96px;height:96px;border-radius:50%;object-fit:cover;border:2px solid var(--accent);" />
     </div>
 
     <h3>Club</h3>
@@ -102,7 +104,7 @@
     <button type="submit" class="btn btn-secondary">Régénérer le code d'accès</button>
   </form>
   <form method="post" action="/admin/joueurs/<%= player.id %>/supprimer" class="inline-form"
-        onsubmit="return confirm('Supprimer définitivement ce joueur et tous ses rapports ?');">
+        data-confirm="Supprimer définitivement ce joueur et tous ses rapports ?">
     <button type="submit" class="btn btn-danger">Supprimer le joueur</button>
   </form>
 </div>
@@ -126,5 +128,8 @@
     </a>
   <% }) %>
 <% } %>
+
+<script src="/js/photo-cropper.js" defer></script>
+<script src="/js/stats-animate.js" defer></script>
 
 <%- include('../partials/footer') %>

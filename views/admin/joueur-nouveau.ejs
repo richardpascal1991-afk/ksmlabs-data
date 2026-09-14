@@ -25,8 +25,10 @@
 
   <h3 style="margin-top:28px;">Photo du joueur</h3>
   <div class="form-group">
-    <label for="photo">Photo (PNG, JPG ou WEBP)</label>
-    <input type="file" id="photo" name="photo" accept=".png,.jpg,.jpeg,.webp" />
+    <label for="photo">Photo (PNG, JPG ou WEBP) — un outil de recadrage s'ouvre après le choix du fichier</label>
+    <input type="file" id="photo" name="photo" accept=".png,.jpg,.jpeg,.webp"
+           data-cropper data-cropper-preview="#photo-preview" />
+    <img id="photo-preview" alt="Aperçu de la photo recadrée" style="display:none;margin-top:10px;width:96px;height:96px;border-radius:50%;object-fit:cover;border:2px solid var(--accent);" />
   </div>
 
   <h3 style="margin-top:28px;">Club</h3>
@@ -59,5 +61,7 @@
 
   <button type="submit" class="btn">Créer le joueur</button>
 </form>
+
+<script src="/js/photo-cropper.js" defer></script>
 
 <%- include('../partials/footer') %>
