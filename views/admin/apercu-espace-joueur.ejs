@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Aperçu — nouvel espace joueur — <%= player.prenom %> <%= player.nom %></title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/apercu-joueur.css" />
+</head>
+<body>
+
+  <div class="mock-banner">
+    Aperçu bêta — page isolée, non utilisée par le joueur, non déployée pour de vrai. <a href="/admin/joueurs/<%= player.id %>">← Retour à la fiche</a>
+  </div>
+
+  <div class="p-header">
+    <div class="p-header-top">
+      <div class="p-notif">&#128276;<span class="dot"></span></div>
+    </div>
+    <div class="p-identity">
+      <% if (player.photo_filename) { %>
+        <img class="p-photo" src="/media/joueur-photo/<%= player.id %>" alt="" />
+      <% } else { %>
+        <div class="p-photo"><%= (player.prenom[0] || '') %><%= (player.nom[0] || '') %></div>
+      <% } %>
+      <div>
+        <p class="p-name"><%= player.prenom %> <%= player.nom %></p>
+        <div class="p-club">
+          <% if (player.club_logo_filename) { %>
+            <img class="p-club-logo" src="/media/club-logo/<%= player.id %>" alt="" />
+          <% } else { %>
+            <span class="p-club-logo">?</span>
+          <% } %>
+          <span><%= player.club_nom || 'Club non renseigné' %></span>
+        </div>
+      </div>
+    </div>
+    <div class="p-meta-row">
+      <span class="p-pill"><%= player.poste || 'Poste non renseigné' %></span>
+      <span class="p-pill"><%= player.numero ? '#' + player.numero : 'Numéro non renseigné' %></span>
+      <span class="p-pill"><%= player.nationalite || 'Nationalité non renseignée' %></span>
+    </div>
+  </div>
+
+  <div class="p-tabs">
+    <div class="p-tab active" data-tab="profil">Profil</div>
+    <div class="p-tab" data-tab="matchs">Matchs</div>
+    <div class="p-tab" data-tab="analyses">Analyses</div>
+    <div class="p-tab" data-tab="data">Data</div>
+    <div class="p-tab" data-tab="progression">Progression</div>
+  </div>
+
+  <div class="p-content">
+
+    <div class="tab-panel active" id="panel-profil">
+      <div class="p-card">
+        <p class="p-card-title">Informations <span class="real-flag">données réelles</span></p>
+        <div class="p-grid">
+          <div class="p-stat">
+            <div class="p-stat-value"><%= player.taille_cm ? player.taille_cm + ' cm' : '—' %></div>
+            <div class="p-stat-label">Taille</div>
+          </div>
+          <div class="p-stat">
+            <div class="p-stat-value"><%= age !== null ? age + ' ans' : '—' %></div>
+            <div class="p-stat-label"><%= dateNaissanceFr || 'Date de naissance non renseignée' %></div>
+          </div>
+          <div class="p-stat">
+            <div class="p-stat-value"><%= player.nationalite || '—' %></div>
+            <div class="p-stat-label">Nationalité</div>
+          </div>
+          <div class="p-stat">
+            <div class="p-stat-value"><%= player.numero ? '#' + player.numero : '—' %></div>
+            <div class="p-stat-label">Numéro</div>
+          </div>
+          <div class="p-stat">
+            <div class="p-stat-value"><%= player.poste || '—' %></div>
+            <div class="p-stat-label">Poste</div>
+          </div>
+          <div class="p-stat">
+            <div class="p-stat-value"><%= player.pied_fort || '—' %></div>
+            <div class="p-stat-label">Pied fort</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="p-card">
+        <p class="p-card-title">Suivi KSM LABS <span class="example-flag">partiellement réel</span></p>
+        <div class="p-suivi-list">
+          <div class="p-suivi-row"><span class="label">Matchs analysés</span><span class="value"><%= player.nb_matchs || 0 %></span></div>
+          <div class="p-suivi-row"><span class="label">Minutes analysées</span><span class="value neutral">— (exemple, pas encore suivi)</span></div>
+          <div class="p-suivi-row"><span class="label">Note moyenne interne</span><span class="value neutral">— (exemple, pas encore suivi)</span></div>
+          <div class="p-suivi-row"><span class="label">Vidéos correctives</span><span class="value neutral">— (exemple, pas encore suivi)</span></div>
+          <div class="p-suivi-row"><span class="label">Objectifs atteints</span><span class="value neutral">— (exemple, pas encore suivi)</span></div>
+          <div class="p-suivi-row"><span class="label">Dernière analyse</span><span class="value neutral"><%= dernierRapportFr || 'Aucune pour l\'instant' %></span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tab-panel" id="panel-matchs">
+      <p class="p-placeholder">Onglet Matchs — bientôt disponible dans cet aperçu.</p>
+    </div>
+    <div class="tab-panel" id="panel-analyses">
+      <p class="p-placeholder">Onglet Analyses — bientôt disponible dans cet aperçu.</p>
+    </div>
+    <div class="tab-panel" id="panel-data">
+      <p class="p-placeholder">Onglet Data — bientôt disponible dans cet aperçu.</p>
+    </div>
+    <div class="tab-panel" id="panel-progression">
+      <p class="p-placeholder">Onglet Progression — bientôt disponible dans cet aperçu.</p>
+    </div>
+
+  </div>
+
+  <nav class="b-nav">
+    <a class="b-link active" data-target="profil"><span class="ico"></span>Accueil</a>
+    <a class="b-link" data-target="matchs"><span class="ico"></span>Matchs</a>
+    <a class="b-link" data-target="analyses"><span class="ico"></span>Vidéos</a>
+    <a class="b-link" data-target="progression"><span class="ico"></span>Progression</a>
+    <a class="b-link" data-target="profil"><span class="ico"></span>Profil</a>
+  </nav>
+
+  <script src="/js/apercu-joueur.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,431 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>KSMLABS — Maquette espace joueur (complet)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #0b0d12;
+    --bg-card: #151822;
+    --bg-card-soft: #11141c;
+    --border: #262b3a;
+    --text: #e7e9ee;
+    --text-dim: #9aa0b4;
+    --accent: #22d3a8;
+    --accent-dark: #15a486;
+    --danger: #ef4444;
+    --warning: #f59e0b;
+    --radius: 16px;
+    --font: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--bg); color: var(--text); font-family: var(--font); }
+  body {
+    max-width: 430px; margin: 0 auto; min-height: 100vh;
+    background: radial-gradient(600px 340px at 10% -10%, rgba(34,211,168,0.10), transparent 55%), var(--bg);
+    padding-bottom: 84px;
+  }
+  @keyframes fadeInUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+  @keyframes drawRadar { from { opacity:0; transform: scale(0.85); } to { opacity:1; transform: scale(1); } }
+  @keyframes drawLine { from { stroke-dashoffset: 400; } to { stroke-dashoffset: 0; } }
+
+  .mock-banner {
+    background: rgba(245, 158, 11, 0.1);
+    border-bottom: 1px solid rgba(245, 158, 11, 0.3);
+    color: #fcd34d; font-size: 12px; padding: 8px 16px; text-align: center;
+  }
+
+  /* Header */
+  .p-header { padding: 18px 18px 0; animation: fadeInUp 0.45s ease both; }
+  .p-header-top { display: flex; justify-content: flex-end; margin-bottom: 8px; }
+  .p-notif {
+    position: relative; width: 34px; height: 34px; border-radius: 50%;
+    background: var(--bg-card); border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center; color: var(--text-dim); font-size: 15px;
+  }
+  .p-notif .dot {
+    position: absolute; top: 6px; right: 7px; width: 8px; height: 8px; border-radius: 50%;
+    background: var(--accent); box-shadow: 0 0 0 3px rgba(34,211,168,0.25);
+  }
+  .p-identity { display: flex; align-items: center; gap: 14px; }
+  .p-photo {
+    width: 76px; height: 76px; border-radius: 50%; flex-shrink: 0;
+    background: linear-gradient(160deg, #1c2130, #0d0f16); border: 2px solid var(--accent);
+    display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 22px; color: var(--accent);
+  }
+  .p-name { font-size: 22px; font-weight: 800; letter-spacing: -0.3px; margin: 0 0 4px; }
+  .p-club {
+    display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-dim);
+    background: var(--bg-card); border: 1px solid var(--border); border-radius: 999px; padding: 3px 10px 3px 4px; width: fit-content;
+  }
+  .p-club-logo { width: 18px; height: 18px; border-radius: 50%; background: #2a2f40; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 700; color: var(--text); flex-shrink: 0; }
+  .p-meta-row { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+  .p-pill { font-size: 11px; font-weight: 600; color: var(--text-dim); background: var(--bg-card); border: 1px solid var(--border); border-radius: 999px; padding: 4px 10px; }
+
+  /* Tabs */
+  .p-tabs { display: flex; gap: 4px; margin: 20px 18px 0; border-bottom: 1px solid var(--border); animation: fadeInUp 0.45s ease 0.05s both; overflow-x: auto; }
+  .p-tab { flex: 1; text-align: center; padding: 10px 4px; font-size: 12.5px; font-weight: 600; color: var(--text-dim); border-bottom: 2px solid transparent; cursor: pointer; white-space: nowrap; transition: color 0.15s ease, border-color 0.15s ease; }
+  .p-tab.active { color: var(--accent); border-color: var(--accent); }
+
+  .p-content { padding: 18px; }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; animation: fadeInUp 0.3s ease both; }
+
+  .p-card {
+    background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px;
+    margin-bottom: 16px; box-shadow: 0 1px 2px rgba(0,0,0,0.2); animation: fadeInUp 0.45s ease both;
+  }
+  .p-content .tab-panel.active .p-card:nth-of-type(1) { animation-delay: 0.06s; }
+  .p-content .tab-panel.active .p-card:nth-of-type(2) { animation-delay: 0.12s; }
+  .p-content .tab-panel.active .p-card:nth-of-type(3) { animation-delay: 0.18s; }
+
+  .p-card-title { font-size: 14px; font-weight: 700; margin: 0 0 14px; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .example-flag { font-size: 10px; font-weight: 600; color: #fcd34d; background: rgba(245,158,11,0.12); border: 1px solid rgba(245,158,11,0.3); border-radius: 999px; padding: 2px 8px; white-space: nowrap; }
+
+  .p-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px 8px; }
+  .p-stat { text-align: center; }
+  .p-stat-value { font-size: 17px; font-weight: 800; color: var(--text); font-variant-numeric: tabular-nums; }
+  .p-stat-label { font-size: 11px; color: var(--text-dim); margin-top: 3px; }
+
+  .p-suivi-list { display: flex; flex-direction: column; gap: 12px; }
+  .p-suivi-row { display: flex; align-items: center; justify-content: space-between; font-size: 13px; }
+  .p-suivi-row .label { color: var(--text-dim); }
+  .p-suivi-row .value { font-weight: 700; color: var(--accent); font-variant-numeric: tabular-nums; }
+  .p-suivi-row .value.neutral { color: var(--text); }
+
+  /* Matchs */
+  .match-card { padding: 16px; }
+  .match-top { display: flex; align-items: center; justify-content: space-between; font-size: 11px; color: var(--text-dim); margin-bottom: 12px; }
+  .match-teams { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .match-team { display: flex; flex-direction: column; align-items: center; gap: 6px; width: 80px; }
+  .team-logo { width: 34px; height: 34px; border-radius: 8px; background: #1c2130; border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; }
+  .team-name { font-size: 11px; color: var(--text-dim); text-align: center; }
+  .match-score { font-size: 20px; font-weight: 800; letter-spacing: 1px; }
+  .match-meta { display: flex; gap: 14px; justify-content: center; margin-bottom: 12px; font-size: 12px; color: var(--text-dim); }
+  .match-meta b { color: var(--text); font-weight: 700; }
+  .match-footer { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .status-badge { font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 999px; border: 1px solid; }
+  .status-ready { color: #6ee7c4; border-color: rgba(34,211,168,0.4); background: rgba(34,211,168,0.08); }
+  .status-pending { color: var(--text-dim); border-color: var(--border); background: transparent; }
+  .btn-mini { background: var(--accent); color: #06120e; border: none; border-radius: 8px; padding: 7px 14px; font-size: 12px; font-weight: 700; }
+  .btn-mini.ghost { background: transparent; color: var(--text-dim); border: 1px solid var(--border); }
+
+  /* Analyses */
+  .cat-scroll { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 16px; }
+  .cat-chip { flex-shrink: 0; font-size: 11.5px; font-weight: 600; color: var(--text-dim); background: var(--bg-card); border: 1px solid var(--border); border-radius: 999px; padding: 6px 12px; }
+  .cat-chip.active { color: var(--accent); border-color: var(--accent); background: rgba(34,211,168,0.08); }
+  .video-card { padding: 0; overflow: hidden; }
+  .video-thumb { position: relative; height: 120px; background: linear-gradient(135deg, #1c2130, #0d0f16); display: flex; align-items: center; justify-content: center; }
+  .video-thumb .play { width: 40px; height: 40px; border-radius: 50%; background: rgba(34,211,168,0.9); display: flex; align-items: center; justify-content: center; color: #06120e; font-size: 14px; }
+  .video-thumb .duration { position: absolute; bottom: 8px; right: 10px; font-size: 11px; background: rgba(0,0,0,0.6); padding: 2px 7px; border-radius: 5px; }
+  .video-thumb .new-badge { position: absolute; top: 8px; left: 10px; font-size: 10px; font-weight: 700; background: var(--accent); color: #06120e; padding: 2px 8px; border-radius: 999px; box-shadow: 0 0 12px rgba(34,211,168,0.5); }
+  .video-body { padding: 14px 16px 16px; }
+  .video-title { font-weight: 700; font-size: 14px; margin: 0 0 4px; }
+  .video-match { font-size: 12px; color: var(--text-dim); margin: 0 0 10px; }
+  .video-theme { display: inline-block; font-size: 10.5px; font-weight: 600; color: var(--accent); background: rgba(34,211,168,0.1); border: 1px solid rgba(34,211,168,0.3); border-radius: 999px; padding: 3px 9px; margin-bottom: 10px; }
+  .video-comment { font-size: 12.5px; color: var(--text-dim); background: var(--bg-card-soft); border-radius: 10px; padding: 10px 12px; margin-bottom: 12px; line-height: 1.5; }
+  .video-comment b { color: var(--text); }
+
+  /* Data */
+  .radar-wrap { display: flex; justify-content: center; margin-bottom: 8px; animation: drawRadar 0.6s ease both; }
+  .trend-list { display: flex; flex-direction: column; gap: 10px; }
+  .trend-row { display: flex; align-items: center; justify-content: space-between; font-size: 13px; }
+  .trend-row .label { color: var(--text-dim); }
+  .trend-val { display: flex; align-items: center; gap: 6px; font-weight: 700; }
+  .trend-up { color: #6ee7c4; }
+  .trend-down { color: #fca5a5; }
+  .trend-flat { color: var(--text-dim); }
+  .line-chart { width: 100%; height: 90px; }
+
+  /* Progression */
+  .goal-row { margin-bottom: 14px; }
+  .goal-row:last-child { margin-bottom: 0; }
+  .goal-head { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 6px; }
+  .goal-head .pct { color: var(--accent); font-weight: 700; }
+  .goal-track { height: 7px; border-radius: 999px; background: #0d0f16; border: 1px solid var(--border); overflow: hidden; }
+  .goal-fill { height: 100%; background: linear-gradient(90deg, var(--accent-dark), var(--accent)); border-radius: 999px; }
+  .tag-list { display: flex; flex-wrap: wrap; gap: 8px; }
+  .tag-good { font-size: 12px; font-weight: 600; color: #6ee7c4; background: rgba(34,211,168,0.1); border: 1px solid rgba(34,211,168,0.3); border-radius: 999px; padding: 5px 12px; }
+  .tag-work { font-size: 12px; font-weight: 600; color: #fcd34d; background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.3); border-radius: 999px; padding: 5px 12px; }
+  .plan-list { margin: 0; padding-left: 18px; font-size: 13px; color: var(--text-dim); line-height: 1.9; }
+  .plan-list li::marker { color: var(--accent); }
+
+  /* Bottom nav */
+  .b-nav {
+    position: fixed; left: 50%; transform: translateX(-50%); bottom: 0; width: 100%; max-width: 430px;
+    display: flex; background: rgba(13,15,22,0.95); backdrop-filter: blur(10px); border-top: 1px solid var(--border);
+    padding: 8px 8px calc(8px + env(safe-area-inset-bottom));
+  }
+  .b-nav a { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 10.5px; font-weight: 600; color: var(--text-dim); padding: 4px; cursor: pointer; }
+  .b-nav a .ico { width: 20px; height: 20px; border-radius: 6px; background: var(--bg-card); border: 1px solid var(--border); }
+  .b-nav a.active { color: var(--accent); }
+  .b-nav a.active .ico { background: rgba(34,211,168,0.15); border-color: var(--accent); }
+</style>
+</head>
+<body>
+
+  <div class="mock-banner">
+    Maquette — aperçu de design uniquement, non connectée à l'application ni déployée. Les valeurs marquées « exemple » ne sont pas des données réelles.
+  </div>
+
+  <div class="p-header">
+    <div class="p-header-top">
+      <div class="p-notif">&#128276;<span class="dot"></span></div>
+    </div>
+    <div class="p-identity">
+      <div class="p-photo">DM</div>
+      <div>
+        <p class="p-name">Daniel Mbombi</p>
+        <div class="p-club"><span class="p-club-logo">FC</span><span>Club à renseigner</span></div>
+      </div>
+    </div>
+    <div class="p-meta-row">
+      <span class="p-pill">Défenseur central</span>
+      <span class="p-pill">#4 (exemple)</span>
+      <span class="p-pill">🇫🇷 France (exemple)</span>
+    </div>
+  </div>
+
+  <div class="p-tabs">
+    <div class="p-tab active" data-tab="profil">Profil</div>
+    <div class="p-tab" data-tab="matchs">Matchs</div>
+    <div class="p-tab" data-tab="analyses">Analyses</div>
+    <div class="p-tab" data-tab="data">Data</div>
+    <div class="p-tab" data-tab="progression">Progression</div>
+  </div>
+
+  <div class="p-content">
+
+    <!-- PROFIL -->
+    <div class="tab-panel active" id="panel-profil">
+      <div class="p-card">
+        <p class="p-card-title">Informations <span class="example-flag">à compléter en base</span></p>
+        <div class="p-grid">
+          <div class="p-stat"><div class="p-stat-value">— cm</div><div class="p-stat-label">Taille</div></div>
+          <div class="p-stat"><div class="p-stat-value">19 ans</div><div class="p-stat-label">12 mars 2007 (exemple)</div></div>
+          <div class="p-stat"><div class="p-stat-value">France</div><div class="p-stat-label">Nationalité (exemple)</div></div>
+          <div class="p-stat"><div class="p-stat-value">#4</div><div class="p-stat-label">Numéro (exemple)</div></div>
+          <div class="p-stat"><div class="p-stat-value">Défenseur</div><div class="p-stat-label">Poste</div></div>
+          <div class="p-stat"><div class="p-stat-value">Droit</div><div class="p-stat-label">Pied fort (exemple)</div></div>
+        </div>
+      </div>
+      <div class="p-card">
+        <p class="p-card-title">Suivi KSM LABS <span class="example-flag">partiellement réel</span></p>
+        <div class="p-suivi-list">
+          <div class="p-suivi-row"><span class="label">Matchs analysés</span><span class="value">— (exemple)</span></div>
+          <div class="p-suivi-row"><span class="label">Minutes analysées</span><span class="value neutral">— (exemple)</span></div>
+          <div class="p-suivi-row"><span class="label">Note moyenne interne</span><span class="value neutral">— (exemple)</span></div>
+          <div class="p-suivi-row"><span class="label">Vidéos correctives</span><span class="value neutral">— (exemple)</span></div>
+          <div class="p-suivi-row"><span class="label">Objectifs atteints</span><span class="value neutral">— (exemple)</span></div>
+          <div class="p-suivi-row"><span class="label">Dernière analyse</span><span class="value neutral">Aucune pour l'instant</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MATCHS -->
+    <div class="tab-panel" id="panel-matchs">
+      <div class="p-card match-card">
+        <div class="match-top"><span>Ligue régionale U19 (exemple)</span><span>14 sept. 2026</span></div>
+        <div class="match-teams">
+          <div class="match-team"><div class="team-logo">FCE</div><div class="team-name">FC Exemple</div></div>
+          <div class="match-score">2 – 1</div>
+          <div class="match-team"><div class="team-logo">AS</div><div class="team-name">AS Rival</div></div>
+        </div>
+        <div class="match-meta"><span><b>90'</b> jouées</span><span><b>7,4</b> note (exemple)</span></div>
+        <div class="match-footer">
+          <span class="status-badge status-ready">Rapport disponible</span>
+          <button class="btn-mini">Voir l'analyse</button>
+        </div>
+      </div>
+      <div class="p-card match-card">
+        <div class="match-top"><span>Coupe régionale (exemple)</span><span>6 sept. 2026</span></div>
+        <div class="match-teams">
+          <div class="match-team"><div class="team-logo">FCE</div><div class="team-name">FC Exemple</div></div>
+          <div class="match-score">0 – 0</div>
+          <div class="match-team"><div class="team-logo">SC</div><div class="team-name">SC Voisin</div></div>
+        </div>
+        <div class="match-meta"><span><b>76'</b> jouées</span><span><b>6,1</b> note (exemple)</span></div>
+        <div class="match-footer">
+          <span class="status-badge status-ready">Rapport disponible</span>
+          <button class="btn-mini">Voir l'analyse</button>
+        </div>
+      </div>
+      <div class="p-card match-card">
+        <div class="match-top"><span>Ligue régionale U19 (exemple)</span><span>30 août 2026</span></div>
+        <div class="match-teams">
+          <div class="match-team"><div class="team-logo">FCE</div><div class="team-name">FC Exemple</div></div>
+          <div class="match-score">1 – 3</div>
+          <div class="match-team"><div class="team-logo">OL</div><div class="team-name">OL Jeunes</div></div>
+        </div>
+        <div class="match-meta"><span><b>90'</b> jouées</span><span>note en attente</span></div>
+        <div class="match-footer">
+          <span class="status-badge status-pending">Rapport en préparation</span>
+          <button class="btn-mini ghost">Bientôt disponible</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ANALYSES -->
+    <div class="tab-panel" id="panel-analyses">
+      <div class="cat-scroll">
+        <span class="cat-chip active">Toutes</span>
+        <span class="cat-chip">Animation offensive</span>
+        <span class="cat-chip">Animation défensive</span>
+        <span class="cat-chip">Transition offensive</span>
+        <span class="cat-chip">Transition défensive</span>
+        <span class="cat-chip">Technique individuelle</span>
+        <span class="cat-chip">Prise d'information</span>
+        <span class="cat-chip">Prise de décision</span>
+        <span class="cat-chip">CPA</span>
+      </div>
+      <div class="p-card video-card">
+        <div class="video-thumb">
+          <span class="new-badge">Nouveau</span>
+          <span class="duration">2:14</span>
+          <div class="play">&#9658;</div>
+        </div>
+        <div class="video-body">
+          <p class="video-title">Placement en phase de transition défensive</p>
+          <p class="video-match">vs AS Rival · 14 sept. 2026 (exemple)</p>
+          <span class="video-theme">Transition défensive</span>
+          <div class="video-comment"><b>Analyste :</b> reviens sur ton replacement après perte de balle, ligne défensive trop haute sur les 3 séquences ci-jointes.</div>
+          <button class="btn-mini">J'ai compris</button>
+        </div>
+      </div>
+      <div class="p-card video-card">
+        <div class="video-thumb">
+          <span class="duration">1:47</span>
+          <div class="play">&#9658;</div>
+        </div>
+        <div class="video-body">
+          <p class="video-title">Prise de décision sous pression</p>
+          <p class="video-match">vs SC Voisin · 6 sept. 2026 (exemple)</p>
+          <span class="video-theme">Prise de décision</span>
+          <div class="video-comment"><b>Analyste :</b> bon geste technique, mais la passe en profondeur était disponible dès le 2e contrôle.</div>
+          <button class="btn-mini ghost">Déjà vu</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- DATA -->
+    <div class="tab-panel" id="panel-data">
+      <div class="p-card">
+        <p class="p-card-title">Radar de compétences <span class="example-flag">exemple</span></p>
+        <div class="radar-wrap">
+          <svg width="260" height="210" viewBox="-40 -10 300 220">
+            <polygon points="110,14 198,68 198,148 110,192 22,148 22,68" fill="none" stroke="#262b3a" stroke-width="1"/>
+            <polygon points="110,45 175,80 175,136 110,168 45,136 45,80" fill="none" stroke="#262b3a" stroke-width="1"/>
+            <polygon points="110,75 152,92 152,124 110,144 68,124 68,92" fill="none" stroke="#262b3a" stroke-width="1"/>
+            <line x1="110" y1="100" x2="110" y2="14" stroke="#262b3a"/>
+            <line x1="110" y1="100" x2="198" y2="68" stroke="#262b3a"/>
+            <line x1="110" y1="100" x2="198" y2="148" stroke="#262b3a"/>
+            <line x1="110" y1="100" x2="110" y2="192" stroke="#262b3a"/>
+            <line x1="110" y1="100" x2="22" y2="148" stroke="#262b3a"/>
+            <line x1="110" y1="100" x2="22" y2="68" stroke="#262b3a"/>
+            <polygon points="110,30 168,78 178,140 100,178 50,130 40,75" fill="rgba(34,211,168,0.22)" stroke="#22d3a8" stroke-width="2"/>
+            <text x="110" y="8" fill="#9aa0b4" font-size="10" text-anchor="middle" font-family="Inter, sans-serif">Duels</text>
+            <text x="204" y="65" fill="#9aa0b4" font-size="10" text-anchor="start" font-family="Inter, sans-serif">Passes</text>
+            <text x="204" y="152" fill="#9aa0b4" font-size="10" text-anchor="start" font-family="Inter, sans-serif">Vitesse</text>
+            <text x="110" y="200" fill="#9aa0b4" font-size="10" text-anchor="middle" font-family="Inter, sans-serif">Placement</text>
+            <text x="16" y="152" fill="#9aa0b4" font-size="10" text-anchor="end" font-family="Inter, sans-serif">Technique</text>
+            <text x="16" y="65" fill="#9aa0b4" font-size="10" text-anchor="end" font-family="Inter, sans-serif">Relance</text>
+          </svg>
+        </div>
+      </div>
+      <div class="p-card">
+        <p class="p-card-title">Évolution de la note <span class="example-flag">exemple</span></p>
+        <svg class="line-chart" viewBox="0 0 300 90" preserveAspectRatio="none">
+          <polyline points="0,60 60,50 120,55 180,30 240,35 300,18" fill="none" stroke="#22d3a8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="400" style="animation: drawLine 1.1s ease forwards;"/>
+        </svg>
+        <div class="p-suivi-row" style="margin-top:10px;">
+          <span class="label">5 derniers matchs</span><span class="value">6,8 → 7,4 (exemple)</span>
+        </div>
+      </div>
+      <div class="p-card">
+        <p class="p-card-title">Comparaison <span class="example-flag">exemple</span></p>
+        <div class="trend-list">
+          <div class="trend-row"><span class="label">Duels gagnés</span><span class="trend-val trend-up">▲ +8% vs moyenne saison</span></div>
+          <div class="trend-row"><span class="label">Passes réussies</span><span class="trend-val trend-flat">▬ stable vs moyenne saison</span></div>
+          <div class="trend-row"><span class="label">Pertes de balle</span><span class="trend-val trend-down">▼ -5% vs 5 derniers matchs</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROGRESSION -->
+    <div class="tab-panel" id="panel-progression">
+      <div class="p-card">
+        <p class="p-card-title">Objectifs actuels <span class="example-flag">exemple</span></p>
+        <div class="goal-row">
+          <div class="goal-head"><span>Améliorer le replacement défensif</span><span class="pct">70%</span></div>
+          <div class="goal-track"><div class="goal-fill" style="width:70%;"></div></div>
+        </div>
+        <div class="goal-row">
+          <div class="goal-head"><span>Renforcer le pied faible</span><span class="pct">40%</span></div>
+          <div class="goal-track"><div class="goal-fill" style="width:40%;"></div></div>
+        </div>
+        <div class="goal-row">
+          <div class="goal-head"><span>Communication défensive</span><span class="pct">85%</span></div>
+          <div class="goal-track"><div class="goal-fill" style="width:85%;"></div></div>
+        </div>
+      </div>
+      <div class="p-card">
+        <p class="p-card-title">Points forts <span class="example-flag">exemple</span></p>
+        <div class="tag-list">
+          <span class="tag-good">Duels aériens</span>
+          <span class="tag-good">Relance courte</span>
+          <span class="tag-good">Leadership défensif</span>
+        </div>
+      </div>
+      <div class="p-card">
+        <p class="p-card-title">Axes d'amélioration <span class="example-flag">exemple</span></p>
+        <div class="tag-list">
+          <span class="tag-work">Pied faible</span>
+          <span class="tag-work">Vitesse de replacement</span>
+        </div>
+      </div>
+      <div class="p-card">
+        <p class="p-card-title">Plan de travail <span class="example-flag">exemple</span></p>
+        <ul class="plan-list">
+          <li>2 séances techniques pied faible / semaine</li>
+          <li>Travail vidéo ciblé sur les transitions défensives</li>
+          <li>Point individuel après chaque match analysé</li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+  <nav class="b-nav">
+    <a class="b-link active" data-target="profil"><span class="ico"></span>Accueil</a>
+    <a class="b-link" data-target="matchs"><span class="ico"></span>Matchs</a>
+    <a class="b-link" data-target="analyses"><span class="ico"></span>Vidéos</a>
+    <a class="b-link" data-target="progression"><span class="ico"></span>Progression</a>
+    <a class="b-link" data-target="profil"><span class="ico"></span>Profil</a>
+  </nav>
+
+  <script>
+    var tabs = document.querySelectorAll(".p-tab");
+    var panels = document.querySelectorAll(".tab-panel");
+    var bLinks = document.querySelectorAll(".b-link");
+
+    function activate(name) {
+      tabs.forEach(function (t) { t.classList.toggle("active", t.getAttribute("data-tab") === name); });
+      panels.forEach(function (p) { p.classList.toggle("active", p.id === "panel-" + name); });
+      bLinks.forEach(function (b) { b.classList.toggle("active", b.getAttribute("data-target") === name); });
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    tabs.forEach(function (t) {
+      t.addEventListener("click", function () { activate(t.getAttribute("data-tab")); });
+    });
+    bLinks.forEach(function (b) {
+      b.addEventListener("click", function () { activate(b.getAttribute("data-target")); });
+    });
+  </script>
+
+</body>
+</html>

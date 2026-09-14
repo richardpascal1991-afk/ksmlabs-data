@@ -25,6 +25,11 @@
   </div>
 </div>
 
+<div class="alert alert-info" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+  <span>Nouvel espace joueur en préparation (bêta) — aperçu isolé, pas encore utilisé par le joueur.</span>
+  <a class="btn btn-small btn-secondary" href="/admin/joueurs/<%= player.id %>/apercu-espace-joueur" target="_blank" rel="noopener">Voir l'aperçu</a>
+</div>
+
 <div class="card">
   <h3 style="margin-top:0;">Informations</h3>
   <form method="post" action="/admin/joueurs/<%= player.id %>" enctype="multipart/form-data">
@@ -92,6 +97,31 @@
       <div class="form-group">
         <label for="nb_matchs">Nombre de matchs (à actualiser à tout moment)</label>
         <input type="text" inputmode="numeric" id="nb_matchs" name="nb_matchs" value="<%= player.nb_matchs || 0 %>" />
+      </div>
+    </div>
+    <div class="row">
+      <div class="form-group">
+        <label for="numero">Numéro de maillot (optionnel)</label>
+        <input type="text" inputmode="numeric" id="numero" name="numero" value="<%= player.numero || '' %>" placeholder="ex : 4" />
+      </div>
+      <div class="form-group">
+        <label for="date_naissance">Date de naissance (optionnel)</label>
+        <input type="date" id="date_naissance" name="date_naissance" value="<%= player.date_naissance || '' %>" />
+      </div>
+    </div>
+    <div class="row">
+      <div class="form-group">
+        <label for="nationalite">Nationalité (optionnel)</label>
+        <input type="text" id="nationalite" name="nationalite" value="<%= player.nationalite || '' %>" placeholder="ex : France" />
+      </div>
+      <div class="form-group">
+        <label for="pied_fort">Pied fort (optionnel)</label>
+        <select id="pied_fort" name="pied_fort">
+          <option value="" <%= !player.pied_fort ? 'selected' : '' %>>Non renseigné</option>
+          <option value="Droit" <%= player.pied_fort === 'Droit' ? 'selected' : '' %>>Droit</option>
+          <option value="Gauche" <%= player.pied_fort === 'Gauche' ? 'selected' : '' %>>Gauche</option>
+          <option value="Ambidextre" <%= player.pied_fort === 'Ambidextre' ? 'selected' : '' %>>Ambidextre</option>
+        </select>
       </div>
     </div>
 

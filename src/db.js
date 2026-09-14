@@ -98,6 +98,13 @@ ensureColumn("players", "club_logo_filename", "TEXT");
 ensureColumn("players", "taille_cm", "INTEGER");
 ensureColumn("players", "nb_matchs", "INTEGER NOT NULL DEFAULT 0");
 
+// Champs additionnels pour le nouvel espace joueur (maquette validée) :
+// simples ajouts, aucune donnée existante n'est modifiée ni supprimée.
+ensureColumn("players", "numero", "INTEGER");
+ensureColumn("players", "date_naissance", "TEXT");
+ensureColumn("players", "nationalite", "TEXT");
+ensureColumn("players", "pied_fort", "TEXT");
+
 ensureColumn("report_videos", "filename", "TEXT");
 ensureColumn("report_videos", "original_name", "TEXT");
 ensureColumn("report_videos", "mimetype", "TEXT");

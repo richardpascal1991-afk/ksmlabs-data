@@ -58,6 +58,31 @@
       <input type="text" inputmode="numeric" id="nb_matchs" name="nb_matchs" value="<%= values.nb_matchs || '' %>" placeholder="ex : 12" />
     </div>
   </div>
+  <div class="row">
+    <div class="form-group">
+      <label for="numero">Numéro de maillot (optionnel)</label>
+      <input type="text" inputmode="numeric" id="numero" name="numero" value="<%= values.numero || '' %>" placeholder="ex : 4" />
+    </div>
+    <div class="form-group">
+      <label for="date_naissance">Date de naissance (optionnel)</label>
+      <input type="date" id="date_naissance" name="date_naissance" value="<%= values.date_naissance || '' %>" />
+    </div>
+  </div>
+  <div class="row">
+    <div class="form-group">
+      <label for="nationalite">Nationalité (optionnel)</label>
+      <input type="text" id="nationalite" name="nationalite" value="<%= values.nationalite || '' %>" placeholder="ex : France" />
+    </div>
+    <div class="form-group">
+      <label for="pied_fort">Pied fort (optionnel)</label>
+      <select id="pied_fort" name="pied_fort">
+        <option value="" <%= !values.pied_fort ? 'selected' : '' %>>Non renseigné</option>
+        <option value="Droit" <%= values.pied_fort === 'Droit' ? 'selected' : '' %>>Droit</option>
+        <option value="Gauche" <%= values.pied_fort === 'Gauche' ? 'selected' : '' %>>Gauche</option>
+        <option value="Ambidextre" <%= values.pied_fort === 'Ambidextre' ? 'selected' : '' %>>Ambidextre</option>
+      </select>
+    </div>
+  </div>
 
   <button type="submit" class="btn">Créer le joueur</button>
 </form>

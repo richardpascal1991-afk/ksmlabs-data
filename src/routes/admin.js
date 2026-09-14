@@ -151,7 +151,19 @@ router.get("/joueurs/nouveau", (req, res) => {
 });
 
 router.post("/joueurs", uploadPlayerFiles, (req, res) => {
-  const { prenom, nom, poste, club_nom, club_pays, taille_cm, nb_matchs } = req.body;
+  const {
+    prenom,
+    nom,
+    poste,
+    club_nom,
+    club_pays,
+    taille_cm,
+    nb_matchs,
+    numero,
+    date_naissance,
+    nationalite,
+    pied_fort,
+  } = req.body;
   if (req.uploadError || !prenom || !nom) {
     return res.status(400).render("admin/joueur-nouveau", {
       error: req.uploadError || "Le prénom et le nom sont obligatoires.",
@@ -177,8 +189,8 @@ router.post("/joueurs", uploadPlayerFiles, (req, res) => {
     .prepare(
       `INSERT INTO players
         (identifiant, code_hash, prenom, nom, poste, club_nom, club_pays, taille_cm, nb_matchs,
-         photo_filename, club_logo_filename, must_change_code)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)`
+         photo_filename, club_logo_filename, numero, date_naissance, nationalite, pied_fort, must_change_code)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)`
     )
     .run(
       identifiant,
@@ -191,7 +203,11 @@ router.post("/joueurs", uploadPlayerFiles, (req, res) => {
       taille_cm ? parseInt(taille_cm, 10) : null,
       nb_matchs ? parseInt(nb_matchs, 10) : 0,
       photoFile ? photoFile.filename : null,
-      logoFile ? logoFile.filename : null
+      logoFile ? logoFile.filename : null,
+      numero ? parseInt(numero, 10) : null,
+      date_naissance || null,
+      (nationalite || "").trim(),
+      (pied_fort || "").trim()
     );
 
   res.render("admin/joueur-code", {
@@ -221,7 +237,20 @@ router.post("/joueurs/:id", uploadPlayerFiles, (req, res) => {
     return res.status(400).render("admin/joueur-detail", { player, reports, error: req.uploadError });
   }
 
-  const { prenom, nom, poste, actif, club_nom, club_pays, taille_cm, nb_matchs } = req.body;
+  const {
+    prenom,
+    nom,
+    poste,
+    actif,
+    club_nom,
+    club_pays,
+    taille_cm,
+    nb_matchs,
+    numero,
+    date_naissance,
+    nationalite,
+    pied_fort,
+  } = req.body;
 
   const photoFile = req.files.photo && req.files.photo[0];
   const logoFile = req.files.club_logo && req.files.club_logo[0];
@@ -251,7 +280,8 @@ router.post("/joueurs/:id", uploadPlayerFiles, (req, res) => {
   db.prepare(
     `UPDATE players SET prenom = ?, nom = ?, poste = ?, actif = ?,
      club_nom = ?, club_pays = ?, taille_cm = ?, nb_matchs = ?,
-     photo_filename = ?, club_logo_filename = ? WHERE id = ?`
+     photo_filename = ?, club_logo_filename = ?,
+     numero = ?, date_naissance = ?, nationalite = ?, pied_fort = ? WHERE id = ?`
   ).run(
     prenom.trim(),
     nom.trim(),
@@ -263,9 +293,46 @@ router.post("/joueurs/:id", uploadPlayerFiles, (req, res) => {
     nb_matchs ? parseInt(nb_matchs, 10) : 0,
     photoFilename,
     logoFilename,
+    numero ? parseInt(numero, 10) : null,
+    date_naissance || null,
+    (nationalite || "").trim(),
+    (pied_fort || "").trim(),
     player.id
   );
   res.redirect(`/admin/joueurs/${player.id}`);
+});
+
+// ---------- Aperçu (bêta) du nouvel espace joueur — page séparée, non ----------
+// ---------- connectée à l'espace joueur actuel, pour validation avant ----------
+// ---------- remplacement éventuel. ----------
+
+function calculerAge(dateNaissance) {
+  if (!dateNaissance) return null;
+  const naissance = new Date(dateNaissance);
+  if (isNaN(naissance.getTime())) return null;
+  const aujourdhui = new Date();
+  let age = aujourdhui.getFullYear() - naissance.getFullYear();
+  const pasEncoreAnniversaire =
+    aujourdhui.getMonth() < naissance.getMonth() ||
+    (aujourdhui.getMonth() === naissance.getMonth() && aujourdhui.getDate() < naissance.getDate());
+  if (pasEncoreAnniversaire) age--;
+  return age;
+}
+
+router.get("/joueurs/:id/apercu-espace-joueur", (req, res) => {
+  const player = db.prepare("SELECT * FROM players WHERE id = ?").get(req.params.id);
+  if (!player) return res.status(404).render("404");
+
+  const dernierRapport = db
+    .prepare("SELECT created_at FROM reports WHERE player_id = ? ORDER BY created_at DESC LIMIT 1")
+    .get(player.id);
+
+  res.render("admin/apercu-espace-joueur", {
+    player,
+    age: calculerAge(player.date_naissance),
+    dateNaissanceFr: player.date_naissance ? formatDateFr(player.date_naissance) : null,
+    dernierRapportFr: dernierRapport ? formatDateFr(dernierRapport.created_at) : null,
+  });
 });
 
 router.post("/joueurs/:id/reinitialiser-code", (req, res) => {
