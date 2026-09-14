@@ -9,7 +9,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/css/style.css" />
 </head>
-<body>
+<body class="<%= isAdmin ? 'has-bottom-nav' : '' %>">
   <header class="topbar">
     <div class="topbar-inner">
       <a class="brand" href="/">
@@ -18,12 +18,14 @@
       </a>
       <nav class="topnav">
         <% if (isAdmin) { %>
-          <a href="/admin">Tableau de bord</a>
-          <a href="/admin/joueurs">Joueurs</a>
-          <a href="/admin/mon-compte">Mon compte</a>
-          <form action="/logout" method="post" class="inline-form">
-            <button type="submit" class="link-button">Déconnexion</button>
-          </form>
+          <div class="topnav-admin">
+            <a href="/admin">Tableau de bord</a>
+            <a href="/admin/joueurs">Joueurs</a>
+            <a href="/admin/mon-compte">Mon compte</a>
+            <form action="/logout" method="post" class="inline-form">
+              <button type="submit" class="link-button">Déconnexion</button>
+            </form>
+          </div>
         <% } else if (isPlayer) { %>
           <a href="/joueur">Mes rapports</a>
           <a href="/joueur/mon-compte">Mon compte</a>
@@ -34,4 +36,14 @@
       </nav>
     </div>
   </header>
+  <% if (isAdmin) { %>
+    <nav class="bottom-nav" data-bottom-nav>
+      <a href="/admin" data-nav-match="/admin">Tableau de bord</a>
+      <a href="/admin/joueurs" data-nav-match="/admin/joueurs">Joueurs</a>
+      <a href="/admin/mon-compte" data-nav-match="/admin/mon-compte">Mon compte</a>
+      <form action="/logout" method="post" class="bottom-nav-form">
+        <button type="submit" class="bottom-nav-logout">Déconnexion</button>
+      </form>
+    </nav>
+  <% } %>
   <main class="container">

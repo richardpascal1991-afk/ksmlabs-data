@@ -20,16 +20,24 @@
       <% } else { %>
         <div class="player-list-photo player-list-photo-empty"></div>
       <% } %>
-      <div>
-        <p class="card-title">
-          <%= p.prenom %> <%= p.nom %>
-          <% if (!p.actif) { %><span class="badge badge-inactive">inactif</span><% } %>
+      <div class="player-list-info">
+        <p class="card-title"><%= p.prenom %> <%= p.nom %></p>
+        <p class="card-meta"><%= p.poste || 'poste non renseigné' %></p>
+        <p class="card-meta player-list-club">
+          <% if (p.club_logo_filename) { %>
+            <img class="club-logo-sm" src="/media/club-logo/<%= p.id %>" alt="" />
+          <% } %>
+          <span><%= p.club_nom || 'club non renseigné' %></span>
         </p>
-        <p class="card-meta">
-          <%= p.poste || 'poste non renseigné' %> · identifiant : <%= p.identifiant %>
-          <% if (p.club_nom) { %> · <%= p.club_nom %><% } %>
+        <p class="card-meta player-list-stats">
+          <span><%= p.nb_matchs || 0 %> match<%= (p.nb_matchs || 0) > 1 ? 's' : '' %> analysé<%= (p.nb_matchs || 0) > 1 ? 's' : '' %></span>
+          <span class="player-list-dot">·</span>
+          <span><% if (p.dernier_rapport_fr) { %>Dernier rapport : <%= p.dernier_rapport_fr %><% } else { %>Aucun rapport publié<% } %></span>
         </p>
       </div>
+      <span class="badge player-list-status <%= p.actif ? 'badge-active' : 'badge-inactive' %>">
+        <%= p.actif ? 'Actif' : 'Inactif' %>
+      </span>
     </a>
   <% }) %>
 <% } %>

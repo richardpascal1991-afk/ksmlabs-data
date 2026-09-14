@@ -411,21 +411,42 @@ th { color: var(--text-dim); font-weight: 600; font-size: 12px; text-transform: 
 .player-list-link {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
+  padding: 14px 16px;
 }
+.player-list-link:active { transform: scale(0.985); }
 
 .player-list-photo {
-  width: 44px;
-  height: 44px;
+  width: 64px;
+  height: 64px;
   border-radius: 50%;
   object-fit: cover;
   display: block;
   flex-shrink: 0;
   background: #0d0f16;
-  border: 1px solid var(--border);
+  border: 2px solid var(--border);
 }
 
 .player-list-photo-empty { }
+
+.player-list-info { flex: 1; min-width: 0; }
+.player-list-info .card-title { margin-bottom: 3px; }
+.player-list-info .card-meta { margin: 0 0 3px; }
+.player-list-info .card-meta:last-child { margin-bottom: 0; }
+
+.player-list-club {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.player-list-stats { color: var(--text-dim); }
+.player-list-dot { opacity: 0.5; }
+
+.player-list-status {
+  flex-shrink: 0;
+  align-self: center;
+}
 
 /* ---------- Animations (cartes, apparition) ---------- */
 
@@ -619,6 +640,45 @@ th { color: var(--text-dim); font-weight: 600; font-size: 12px; text-transform: 
   padding: 24px 16px 40px;
 }
 
+/* ---------- Navigation mobile (espace administrateur) ---------- */
+
+.bottom-nav {
+  display: none;
+  align-items: stretch;
+  gap: 4px;
+}
+
+.bottom-nav a,
+.bottom-nav-logout {
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  color: var(--text-dim);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 6px 4px;
+  border-radius: 8px;
+  background: none;
+  border: none;
+  font-family: inherit;
+  cursor: pointer;
+}
+.bottom-nav a:hover,
+.bottom-nav-logout:hover {
+  text-decoration: none;
+  color: var(--text);
+}
+.bottom-nav a.active { color: var(--accent); }
+
+.bottom-nav-form {
+  flex: 1 1 0;
+  display: flex;
+  margin: 0;
+}
+
 /* ---------- Responsive ---------- */
 
 @media (max-width: 600px) {
@@ -640,6 +700,29 @@ th { color: var(--text-dim); font-weight: 600; font-size: 12px; text-transform: 
 
   .actions { gap: 8px; }
   .actions .btn, .actions .btn-secondary { flex: 1 1 auto; justify-content: center; }
+
+  .player-list-link { padding: 12px; gap: 10px; }
+  .player-list-photo { width: 52px; height: 52px; }
+  .player-list-status { font-size: 10px; padding: 2px 6px; }
+
+  /* ---------- Navigation mobile (espace administrateur uniquement) ---------- */
+  .topnav-admin { display: none; }
+
+  .bottom-nav {
+    display: flex;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 20;
+    background: rgba(13, 15, 22, 0.95);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-top: 1px solid var(--border);
+    padding: 6px max(8px, env(safe-area-inset-left)) calc(6px + env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-right));
+  }
+
+  body.has-bottom-nav { padding-bottom: 60px; }
 }
 
 @media (max-width: 380px) {

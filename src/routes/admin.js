@@ -7,7 +7,7 @@ const bcrypt = require("bcryptjs");
 
 const { db, UPLOADS_DIR } = require("../db");
 const { requireAdmin } = require("../middleware/auth");
-const { generateAccessCode, slugifyIdentifiant } = require("../utils");
+const { generateAccessCode, slugifyIdentifiant, formatDateFr } = require("../utils");
 
 const router = express.Router();
 router.use(requireAdmin);
@@ -130,7 +130,19 @@ router.get("/", (req, res) => {
 // ---------- Gestion des joueurs ----------
 
 router.get("/joueurs", (req, res) => {
-  const players = db.prepare("SELECT * FROM players ORDER BY nom, prenom").all();
+  // Lecture seule : on ajoute juste, pour chaque joueur, la date de son
+  // dernier rapport publié (aucune donnée n'est modifiée ni ajoutée en base).
+  const rows = db
+    .prepare(
+      `SELECT players.*,
+         (SELECT MAX(reports.created_at) FROM reports WHERE reports.player_id = players.id) AS dernier_rapport_le
+       FROM players ORDER BY nom, prenom`
+    )
+    .all();
+  const players = rows.map((p) => ({
+    ...p,
+    dernier_rapport_fr: p.dernier_rapport_le ? formatDateFr(p.dernier_rapport_le) : null,
+  }));
   res.render("admin/joueurs", { players });
 });
 
