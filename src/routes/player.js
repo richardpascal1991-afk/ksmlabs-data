@@ -42,7 +42,7 @@ router.get("/rapports/:id", (req, res) => {
   const videos = db
     .prepare("SELECT * FROM report_videos WHERE report_id = ? ORDER BY ordre")
     .all(report.id)
-    .map((v) => ({ ...v, embedUrl: getEmbeddableVideo(v.url) }));
+    .map((v) => ({ ...v, embedUrl: v.filename ? null : getEmbeddableVideo(v.url) }));
   const images = db
     .prepare("SELECT * FROM report_images WHERE report_id = ? ORDER BY ordre")
     .all(report.id);

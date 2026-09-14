@@ -35,6 +35,12 @@ CREATE TABLE IF NOT EXISTS players (
   poste TEXT,
   actif INTEGER NOT NULL DEFAULT 1,
   must_change_code INTEGER NOT NULL DEFAULT 1,
+  photo_filename TEXT,
+  club_nom TEXT,
+  club_pays TEXT,
+  club_logo_filename TEXT,
+  taille_cm INTEGER,
+  nb_matchs INTEGER NOT NULL DEFAULT 0,
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
@@ -56,7 +62,10 @@ CREATE TABLE IF NOT EXISTS report_videos (
   report_id INTEGER NOT NULL REFERENCES reports(id) ON DELETE CASCADE,
   label TEXT,
   url TEXT NOT NULL,
-  ordre INTEGER NOT NULL DEFAULT 0
+  ordre INTEGER NOT NULL DEFAULT 0,
+  filename TEXT,
+  original_name TEXT,
+  mimetype TEXT
 );
 
 CREATE TABLE IF NOT EXISTS report_images (
@@ -71,5 +80,26 @@ CREATE INDEX IF NOT EXISTS idx_reports_player ON reports(player_id);
 CREATE INDEX IF NOT EXISTS idx_videos_report ON report_videos(report_id);
 CREATE INDEX IF NOT EXISTS idx_images_report ON report_images(report_id);
 `);
+
+// Migration légère : ajoute les colonnes manquantes sur une base déjà
+// existante (ex: après une mise à jour du site déjà déployé sur Railway),
+// sans jamais toucher aux données déjà présentes.
+function ensureColumn(table, column, definition) {
+  const existing = db.prepare(`PRAGMA table_info(${table})`).all().map((c) => c.name);
+  if (!existing.includes(column)) {
+    db.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`);
+  }
+}
+
+ensureColumn("players", "photo_filename", "TEXT");
+ensureColumn("players", "club_nom", "TEXT");
+ensureColumn("players", "club_pays", "TEXT");
+ensureColumn("players", "club_logo_filename", "TEXT");
+ensureColumn("players", "taille_cm", "INTEGER");
+ensureColumn("players", "nb_matchs", "INTEGER NOT NULL DEFAULT 0");
+
+ensureColumn("report_videos", "filename", "TEXT");
+ensureColumn("report_videos", "original_name", "TEXT");
+ensureColumn("report_videos", "mimetype", "TEXT");
 
 module.exports = { db, DATA_DIR, UPLOADS_DIR };

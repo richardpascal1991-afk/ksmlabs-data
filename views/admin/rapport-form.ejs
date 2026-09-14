@@ -75,6 +75,27 @@
   <button type="button" class="btn btn-secondary btn-small" onclick="addRow('video-rows', 'video-row')">+ Ajouter un lien vidéo</button>
   <p class="card-meta" style="margin-top:8px;">Les liens YouTube sont intégrés directement. Les liens Hudl / SportsCode / Wyscout s'ouvrent dans un nouvel onglet.</p>
 
+  <h3 style="margin-top:28px;">Vidéos déposées (fichiers)</h3>
+  <% const uploadedVideos = (typeof videos !== 'undefined' ? videos : []).filter(v => v.filename); %>
+  <% if (uploadedVideos.length) { %>
+    <div class="video-grid" style="margin-bottom:14px;">
+      <% uploadedVideos.forEach(v => { %>
+        <div>
+          <video controls style="width:100%;border-radius:8px;background:#000;" src="/media/rapport-video/<%= v.id %>"></video>
+          <p class="card-meta" style="margin-top:6px;"><%= v.original_name || v.label %></p>
+          <div class="checkbox-row">
+            <input type="checkbox" id="rv-<%= v.id %>" name="remove_video" value="<%= v.id %>" />
+            <label for="rv-<%= v.id %>" style="margin:0;">Supprimer</label>
+          </div>
+        </div>
+      <% }) %>
+    </div>
+  <% } %>
+  <div class="form-group">
+    <label for="video_files">Déposer des fichiers vidéo (MP4, MOV, WEBM — 400 Mo max chacun)</label>
+    <input type="file" id="video_files" name="video_files" accept=".mp4,.mov,.webm,.m4v" multiple />
+  </div>
+
   <h3 style="margin-top:28px;">Images / PDF (exports Canva, captures...)</h3>
   <% if (typeof images !== 'undefined' && images.length) { %>
     <div class="image-grid" style="margin-bottom:14px;">

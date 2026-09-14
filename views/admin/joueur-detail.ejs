@@ -3,9 +3,31 @@
 <h1><%= player.prenom %> <%= player.nom %> <% if (!player.actif) { %><span class="badge badge-inactive">inactif</span><% } %></h1>
 <p class="subtitle">Identifiant de connexion : <strong><%= player.identifiant %></strong></p>
 
+<div class="profile-card">
+  <% if (player.photo_filename) { %>
+    <img class="profile-photo" src="/media/joueur-photo/<%= player.id %>" alt="Photo de <%= player.prenom %>" />
+  <% } else { %>
+    <div class="profile-photo profile-photo-empty">Photo</div>
+  <% } %>
+  <div class="profile-info">
+    <% if (player.club_nom) { %>
+      <p class="profile-club">
+        <% if (player.club_logo_filename) { %>
+          <img class="club-logo-sm" src="/media/club-logo/<%= player.id %>" alt="Logo <%= player.club_nom %>" />
+        <% } %>
+        <strong><%= player.club_nom %></strong><% if (player.club_pays) { %> · <%= player.club_pays %><% } %>
+      </p>
+    <% } %>
+    <p class="card-meta">
+      <% if (player.taille_cm) { %><span class="badge">Taille : <%= player.taille_cm %> cm</span> <% } %>
+      <span class="badge">Matchs : <%= player.nb_matchs || 0 %></span>
+    </p>
+  </div>
+</div>
+
 <div class="card">
   <h3 style="margin-top:0;">Informations</h3>
-  <form method="post" action="/admin/joueurs/<%= player.id %>">
+  <form method="post" action="/admin/joueurs/<%= player.id %>" enctype="multipart/form-data">
     <div class="row">
       <div class="form-group">
         <label for="prenom">Prénom</label>
@@ -24,6 +46,53 @@
       <input type="checkbox" id="actif" name="actif" value="1" <%= player.actif ? 'checked' : '' %> />
       <label for="actif">Compte actif (décoche pour bloquer l'accès sans supprimer les données)</label>
     </div>
+
+    <h3>Photo du joueur</h3>
+    <% if (player.photo_filename) { %>
+      <div class="checkbox-row form-group">
+        <input type="checkbox" id="remove_photo" name="remove_photo" value="1" />
+        <label for="remove_photo" style="margin:0;">Supprimer la photo actuelle</label>
+      </div>
+    <% } %>
+    <div class="form-group">
+      <label for="photo">Remplacer la photo (PNG, JPG ou WEBP)</label>
+      <input type="file" id="photo" name="photo" accept=".png,.jpg,.jpeg,.webp" />
+    </div>
+
+    <h3>Club</h3>
+    <div class="row">
+      <div class="form-group">
+        <label for="club_nom">Nom du club</label>
+        <input type="text" id="club_nom" name="club_nom" value="<%= player.club_nom || '' %>" placeholder="ex : FC Exemple" />
+      </div>
+      <div class="form-group">
+        <label for="club_pays">Pays du club</label>
+        <input type="text" id="club_pays" name="club_pays" value="<%= player.club_pays || '' %>" placeholder="ex : France" />
+      </div>
+    </div>
+    <% if (player.club_logo_filename) { %>
+      <div class="checkbox-row form-group">
+        <input type="checkbox" id="remove_club_logo" name="remove_club_logo" value="1" />
+        <label for="remove_club_logo" style="margin:0;">Supprimer le logo actuel</label>
+      </div>
+    <% } %>
+    <div class="form-group">
+      <label for="club_logo">Remplacer le logo du club (PNG, JPG ou WEBP)</label>
+      <input type="file" id="club_logo" name="club_logo" accept=".png,.jpg,.jpeg,.webp" />
+    </div>
+
+    <h3>Données</h3>
+    <div class="row">
+      <div class="form-group">
+        <label for="taille_cm">Taille (cm)</label>
+        <input type="text" inputmode="numeric" id="taille_cm" name="taille_cm" value="<%= player.taille_cm || '' %>" placeholder="ex : 182" />
+      </div>
+      <div class="form-group">
+        <label for="nb_matchs">Nombre de matchs (à actualiser à tout moment)</label>
+        <input type="text" inputmode="numeric" id="nb_matchs" name="nb_matchs" value="<%= player.nb_matchs || 0 %>" />
+      </div>
+    </div>
+
     <button type="submit" class="btn btn-secondary">Enregistrer</button>
   </form>
 </div>

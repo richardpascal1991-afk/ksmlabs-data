@@ -12,50 +12,88 @@ const { generateAccessCode, slugifyIdentifiant } = require("../utils");
 const router = express.Router();
 router.use(requireAdmin);
 
-// ---------- Upload d'images (rapports Canva, captures, etc.) ----------
+// ---------- Upload de fichiers (images/PDF de rapport, vidéos, photo joueur, logo club) ----------
 
-const ALLOWED_MIME = {
+const ALLOWED_IMAGE_MIME = {
   "image/png": ".png",
   "image/jpeg": ".jpg",
   "image/webp": ".webp",
   "application/pdf": ".pdf",
 };
 
+const ALLOWED_PLAYER_MEDIA_MIME = {
+  "image/png": ".png",
+  "image/jpeg": ".jpg",
+  "image/webp": ".webp",
+};
+
+const ALLOWED_VIDEO_MIME = {
+  "video/mp4": ".mp4",
+  "video/quicktime": ".mov",
+  "video/webm": ".webm",
+  "video/x-m4v": ".m4v",
+};
+
+function mimeMapFor(fieldname) {
+  if (fieldname === "images") return ALLOWED_IMAGE_MIME;
+  if (fieldname === "video_files") return ALLOWED_VIDEO_MIME;
+  if (fieldname === "photo" || fieldname === "club_logo") return ALLOWED_PLAYER_MEDIA_MIME;
+  return {};
+}
+
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    const dir = path.join(UPLOADS_DIR, "reports");
+    const sub = file.fieldname === "photo" || file.fieldname === "club_logo" ? "players" : "reports";
+    const dir = path.join(UPLOADS_DIR, sub);
     fs.mkdirSync(dir, { recursive: true });
     cb(null, dir);
   },
   filename: (req, file, cb) => {
-    const ext = ALLOWED_MIME[file.mimetype] || "";
+    const ext = mimeMapFor(file.fieldname)[file.mimetype] || "";
     cb(null, crypto.randomBytes(16).toString("hex") + ext);
   },
 });
 
+// Les vidéos peuvent être volumineuses (export Hudl/SportsCode) : limite
+// large commune à tous les champs, adaptée dans les messages d'erreur.
 const upload = multer({
   storage,
-  limits: { fileSize: 15 * 1024 * 1024, files: 10 },
+  limits: { fileSize: 400 * 1024 * 1024, files: 20 },
   fileFilter: (req, file, cb) => {
-    if (ALLOWED_MIME[file.mimetype]) return cb(null, true);
+    if (mimeMapFor(file.fieldname)[file.mimetype]) return cb(null, true);
     cb(new Error("UNSUPPORTED_TYPE"));
   },
 });
 
 function humanizeUploadError(err) {
-  if (err.code === "LIMIT_FILE_SIZE") return "Un des fichiers dépasse la taille maximale autorisée (15 Mo).";
+  if (err.code === "LIMIT_FILE_SIZE") return "Un des fichiers dépasse la taille maximale autorisée (400 Mo).";
   if (err.code === "LIMIT_FILE_COUNT" || err.code === "LIMIT_UNEXPECTED_FILE")
-    return "Trop de fichiers envoyés en une fois (10 maximum).";
+    return "Trop de fichiers envoyés en une fois.";
   if (err.message === "UNSUPPORTED_TYPE")
-    return "Format de fichier non autorisé (PNG, JPG, WEBP ou PDF uniquement).";
+    return "Format de fichier non autorisé (images : PNG/JPG/WEBP/PDF — vidéos : MP4/MOV/WEBM).";
   return "Erreur lors de l'envoi des fichiers.";
 }
 
-// Enveloppe upload.array pour transformer une erreur multer en message
-// lisible plutôt qu'en page d'erreur 500 générique.
-function uploadImages(req, res, next) {
-  upload.array("images", 10)(req, res, (err) => {
+// Enveloppes qui transforment une erreur multer en message lisible
+// (au lieu d'une page d'erreur 500 générique).
+function uploadReportFiles(req, res, next) {
+  upload.fields([
+    { name: "images", maxCount: 10 },
+    { name: "video_files", maxCount: 5 },
+  ])(req, res, (err) => {
     if (err) req.uploadError = humanizeUploadError(err);
+    if (!req.files) req.files = {};
+    next();
+  });
+}
+
+function uploadPlayerFiles(req, res, next) {
+  upload.fields([
+    { name: "photo", maxCount: 1 },
+    { name: "club_logo", maxCount: 1 },
+  ])(req, res, (err) => {
+    if (err) req.uploadError = humanizeUploadError(err);
+    if (!req.files) req.files = {};
     next();
   });
 }
@@ -91,11 +129,11 @@ router.get("/joueurs/nouveau", (req, res) => {
   res.render("admin/joueur-nouveau", { error: null, values: {} });
 });
 
-router.post("/joueurs", (req, res) => {
-  const { prenom, nom, poste } = req.body;
-  if (!prenom || !nom) {
+router.post("/joueurs", uploadPlayerFiles, (req, res) => {
+  const { prenom, nom, poste, club_nom, club_pays, taille_cm, nb_matchs } = req.body;
+  if (req.uploadError || !prenom || !nom) {
     return res.status(400).render("admin/joueur-nouveau", {
-      error: "Le prénom et le nom sont obligatoires.",
+      error: req.uploadError || "Le prénom et le nom sont obligatoires.",
       values: req.body,
     });
   }
@@ -111,12 +149,29 @@ router.post("/joueurs", (req, res) => {
   const code = generateAccessCode();
   const codeHash = bcrypt.hashSync(code, 10);
 
+  const photoFile = req.files.photo && req.files.photo[0];
+  const logoFile = req.files.club_logo && req.files.club_logo[0];
+
   const result = db
     .prepare(
-      `INSERT INTO players (identifiant, code_hash, prenom, nom, poste, must_change_code)
-       VALUES (?, ?, ?, ?, ?, 1)`
+      `INSERT INTO players
+        (identifiant, code_hash, prenom, nom, poste, club_nom, club_pays, taille_cm, nb_matchs,
+         photo_filename, club_logo_filename, must_change_code)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)`
     )
-    .run(identifiant, codeHash, prenom.trim(), nom.trim(), (poste || "").trim());
+    .run(
+      identifiant,
+      codeHash,
+      prenom.trim(),
+      nom.trim(),
+      (poste || "").trim(),
+      (club_nom || "").trim(),
+      (club_pays || "").trim(),
+      taille_cm ? parseInt(taille_cm, 10) : null,
+      nb_matchs ? parseInt(nb_matchs, 10) : 0,
+      photoFile ? photoFile.filename : null,
+      logoFile ? logoFile.filename : null
+    );
 
   res.render("admin/joueur-code", {
     player: { id: result.lastInsertRowid, prenom, nom, identifiant },
@@ -134,13 +189,61 @@ router.get("/joueurs/:id", (req, res) => {
   res.render("admin/joueur-detail", { player, reports, error: null });
 });
 
-router.post("/joueurs/:id", (req, res) => {
+router.post("/joueurs/:id", uploadPlayerFiles, (req, res) => {
   const player = db.prepare("SELECT * FROM players WHERE id = ?").get(req.params.id);
   if (!player) return res.status(404).render("404");
-  const { prenom, nom, poste, actif } = req.body;
+
+  if (req.uploadError) {
+    const reports = db
+      .prepare("SELECT * FROM reports WHERE player_id = ? ORDER BY date_match DESC, created_at DESC")
+      .all(player.id);
+    return res.status(400).render("admin/joueur-detail", { player, reports, error: req.uploadError });
+  }
+
+  const { prenom, nom, poste, actif, club_nom, club_pays, taille_cm, nb_matchs } = req.body;
+
+  const photoFile = req.files.photo && req.files.photo[0];
+  const logoFile = req.files.club_logo && req.files.club_logo[0];
+
+  let photoFilename = player.photo_filename;
+  if (photoFile) {
+    if (player.photo_filename) {
+      fs.rm(path.join(UPLOADS_DIR, "players", player.photo_filename), { force: true }, () => {});
+    }
+    photoFilename = photoFile.filename;
+  } else if (req.body.remove_photo && player.photo_filename) {
+    fs.rm(path.join(UPLOADS_DIR, "players", player.photo_filename), { force: true }, () => {});
+    photoFilename = null;
+  }
+
+  let logoFilename = player.club_logo_filename;
+  if (logoFile) {
+    if (player.club_logo_filename) {
+      fs.rm(path.join(UPLOADS_DIR, "players", player.club_logo_filename), { force: true }, () => {});
+    }
+    logoFilename = logoFile.filename;
+  } else if (req.body.remove_club_logo && player.club_logo_filename) {
+    fs.rm(path.join(UPLOADS_DIR, "players", player.club_logo_filename), { force: true }, () => {});
+    logoFilename = null;
+  }
+
   db.prepare(
-    "UPDATE players SET prenom = ?, nom = ?, poste = ?, actif = ? WHERE id = ?"
-  ).run(prenom.trim(), nom.trim(), (poste || "").trim(), actif ? 1 : 0, player.id);
+    `UPDATE players SET prenom = ?, nom = ?, poste = ?, actif = ?,
+     club_nom = ?, club_pays = ?, taille_cm = ?, nb_matchs = ?,
+     photo_filename = ?, club_logo_filename = ? WHERE id = ?`
+  ).run(
+    prenom.trim(),
+    nom.trim(),
+    (poste || "").trim(),
+    actif ? 1 : 0,
+    (club_nom || "").trim(),
+    (club_pays || "").trim(),
+    taille_cm ? parseInt(taille_cm, 10) : null,
+    nb_matchs ? parseInt(nb_matchs, 10) : 0,
+    photoFilename,
+    logoFilename,
+    player.id
+  );
   res.redirect(`/admin/joueurs/${player.id}`);
 });
 
@@ -168,8 +271,25 @@ router.post("/joueurs/:id/supprimer", (req, res) => {
     )
     .all(player.id);
   for (const img of images) {
-    const fp = path.join(UPLOADS_DIR, "reports", img.filename);
-    fs.rm(fp, { force: true }, () => {});
+    fs.rm(path.join(UPLOADS_DIR, "reports", img.filename), { force: true }, () => {});
+  }
+
+  const videos = db
+    .prepare(
+      `SELECT report_videos.* FROM report_videos
+       JOIN reports ON reports.id = report_videos.report_id
+       WHERE reports.player_id = ? AND report_videos.filename IS NOT NULL`
+    )
+    .all(player.id);
+  for (const vid of videos) {
+    fs.rm(path.join(UPLOADS_DIR, "reports", vid.filename), { force: true }, () => {});
+  }
+
+  if (player.photo_filename) {
+    fs.rm(path.join(UPLOADS_DIR, "players", player.photo_filename), { force: true }, () => {});
+  }
+  if (player.club_logo_filename) {
+    fs.rm(path.join(UPLOADS_DIR, "players", player.club_logo_filename), { force: true }, () => {});
   }
 
   db.prepare("DELETE FROM players WHERE id = ?").run(player.id);
@@ -206,7 +326,7 @@ router.get("/joueurs/:id/rapports/nouveau", (req, res) => {
   res.render("admin/rapport-form", { player, report: null, videos: [], stats: [], images: [], error: null });
 });
 
-router.post("/joueurs/:id/rapports", uploadImages, (req, res, next) => {
+router.post("/joueurs/:id/rapports", uploadReportFiles, (req, res, next) => {
   try {
     const player = db.prepare("SELECT * FROM players WHERE id = ?").get(req.params.id);
     if (!player) return res.status(404).render("404");
@@ -245,14 +365,20 @@ router.post("/joueurs/:id/rapports", uploadImages, (req, res, next) => {
     const reportId = result.lastInsertRowid;
 
     const insertVideo = db.prepare(
-      "INSERT INTO report_videos (report_id, label, url, ordre) VALUES (?, ?, ?, ?)"
+      `INSERT INTO report_videos (report_id, label, url, ordre, filename, original_name, mimetype)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`
     );
-    videos.forEach((v, i) => insertVideo.run(reportId, v.label, v.url, i));
+    videos.forEach((v, i) => insertVideo.run(reportId, v.label, v.url, i, null, null, null));
+
+    const videoFiles = req.files.video_files || [];
+    videoFiles.forEach((f, i) =>
+      insertVideo.run(reportId, f.originalname || "Vidéo", "", videos.length + i, f.filename, f.originalname, f.mimetype)
+    );
 
     const insertImage = db.prepare(
       "INSERT INTO report_images (report_id, filename, original_name, ordre) VALUES (?, ?, ?, ?)"
     );
-    (req.files || []).forEach((f, i) =>
+    (req.files.images || []).forEach((f, i) =>
       insertImage.run(reportId, f.filename, f.originalname, i)
     );
 
@@ -276,7 +402,7 @@ router.get("/rapports/:id", (req, res) => {
   res.render("admin/rapport-form", { player, report, videos, stats, images, error: null, editing: true });
 });
 
-router.post("/rapports/:id", uploadImages, (req, res, next) => {
+router.post("/rapports/:id", uploadReportFiles, (req, res, next) => {
   try {
     const report = db.prepare("SELECT * FROM reports WHERE id = ?").get(req.params.id);
     if (!report) return res.status(404).render("404");
@@ -314,11 +440,17 @@ router.post("/rapports/:id", uploadImages, (req, res, next) => {
       report.id
     );
 
-    db.prepare("DELETE FROM report_videos WHERE report_id = ?").run(report.id);
+    // Les liens vidéo (label + URL) sont entièrement remplacés à chaque
+    // enregistrement ; les vidéos déposées en fichier sont conservées
+    // sauf si elles sont explicitement cochées pour suppression plus bas.
+    db.prepare(
+      "DELETE FROM report_videos WHERE report_id = ? AND (filename IS NULL OR filename = '')"
+    ).run(report.id);
     const insertVideo = db.prepare(
-      "INSERT INTO report_videos (report_id, label, url, ordre) VALUES (?, ?, ?, ?)"
+      `INSERT INTO report_videos (report_id, label, url, ordre, filename, original_name, mimetype)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`
     );
-    videos.forEach((v, i) => insertVideo.run(report.id, v.label, v.url, i));
+    videos.forEach((v, i) => insertVideo.run(report.id, v.label, v.url, i, null, null, null));
 
     // Suppression d'images existantes cochées
     const toDelete = [].concat(req.body.remove_image || []);
@@ -336,14 +468,46 @@ router.post("/rapports/:id", uploadImages, (req, res, next) => {
       );
     }
 
+    // Suppression de vidéos (fichiers) existantes cochées
+    const toDeleteVideos = [].concat(req.body.remove_video || []);
+    if (toDeleteVideos.length) {
+      const placeholders = toDeleteVideos.map(() => "?").join(",");
+      const vids = db
+        .prepare(`SELECT * FROM report_videos WHERE id IN (${placeholders}) AND report_id = ?`)
+        .all(...toDeleteVideos, report.id);
+      for (const vid of vids) {
+        if (vid.filename) fs.rm(path.join(UPLOADS_DIR, "reports", vid.filename), { force: true }, () => {});
+      }
+      db.prepare(`DELETE FROM report_videos WHERE id IN (${placeholders}) AND report_id = ?`).run(
+        ...toDeleteVideos,
+        report.id
+      );
+    }
+
     const currentMax =
       db.prepare("SELECT MAX(ordre) AS m FROM report_images WHERE report_id = ?").get(report.id)
         .m || 0;
     const insertImage = db.prepare(
       "INSERT INTO report_images (report_id, filename, original_name, ordre) VALUES (?, ?, ?, ?)"
     );
-    (req.files || []).forEach((f, i) =>
+    (req.files.images || []).forEach((f, i) =>
       insertImage.run(report.id, f.filename, f.originalname, currentMax + i + 1)
+    );
+
+    const currentMaxV =
+      db.prepare("SELECT MAX(ordre) AS m FROM report_videos WHERE report_id = ?").get(report.id)
+        .m || 0;
+    const videoFiles = req.files.video_files || [];
+    videoFiles.forEach((f, i) =>
+      insertVideo.run(
+        report.id,
+        f.originalname || "Vidéo",
+        "",
+        currentMaxV + i + 1,
+        f.filename,
+        f.originalname,
+        f.mimetype
+      )
     );
 
     res.redirect(`/admin/joueurs/${player.id}`);
@@ -358,6 +522,10 @@ router.post("/rapports/:id/supprimer", (req, res) => {
   const images = db.prepare("SELECT * FROM report_images WHERE report_id = ?").all(report.id);
   for (const img of images) {
     fs.rm(path.join(UPLOADS_DIR, "reports", img.filename), { force: true }, () => {});
+  }
+  const videos = db.prepare("SELECT * FROM report_videos WHERE report_id = ?").all(report.id);
+  for (const vid of videos) {
+    if (vid.filename) fs.rm(path.join(UPLOADS_DIR, "reports", vid.filename), { force: true }, () => {});
   }
   db.prepare("DELETE FROM reports WHERE id = ?").run(report.id);
   res.redirect(`/admin/joueurs/${report.player_id}`);

@@ -11,12 +11,22 @@
   <p class="subtitle">Aucun joueur enregistré pour l'instant.</p>
 <% } else { %>
   <% players.forEach(p => { %>
-    <a class="card-link" href="/admin/joueurs/<%= p.id %>">
-      <p class="card-title">
-        <%= p.prenom %> <%= p.nom %>
-        <% if (!p.actif) { %><span class="badge badge-inactive">inactif</span><% } %>
-      </p>
-      <p class="card-meta"><%= p.poste || 'poste non renseigné' %> · identifiant : <%= p.identifiant %></p>
+    <a class="card-link player-list-link" href="/admin/joueurs/<%= p.id %>">
+      <% if (p.photo_filename) { %>
+        <img class="player-list-photo" src="/media/joueur-photo/<%= p.id %>" alt="" />
+      <% } else { %>
+        <div class="player-list-photo player-list-photo-empty"></div>
+      <% } %>
+      <div>
+        <p class="card-title">
+          <%= p.prenom %> <%= p.nom %>
+          <% if (!p.actif) { %><span class="badge badge-inactive">inactif</span><% } %>
+        </p>
+        <p class="card-meta">
+          <%= p.poste || 'poste non renseigné' %> · identifiant : <%= p.identifiant %>
+          <% if (p.club_nom) { %> · <%= p.club_nom %><% } %>
+        </p>
+      </div>
     </a>
   <% }) %>
 <% } %>

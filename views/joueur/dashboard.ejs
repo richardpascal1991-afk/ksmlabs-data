@@ -3,6 +3,28 @@
 <h1>Bonjour <%= player.prenom %></h1>
 <p class="subtitle">Tes rapports d'analyse vidéo</p>
 
+<div class="profile-card">
+  <% if (player.photo_filename) { %>
+    <img class="profile-photo" src="/media/joueur-photo/<%= player.id %>" alt="Photo de <%= player.prenom %>" />
+  <% } else { %>
+    <div class="profile-photo profile-photo-empty">Photo</div>
+  <% } %>
+  <div class="profile-info">
+    <% if (player.club_nom) { %>
+      <p class="profile-club">
+        <% if (player.club_logo_filename) { %>
+          <img class="club-logo-sm" src="/media/club-logo/<%= player.id %>" alt="Logo <%= player.club_nom %>" />
+        <% } %>
+        <strong><%= player.club_nom %></strong><% if (player.club_pays) { %> · <%= player.club_pays %><% } %>
+      </p>
+    <% } %>
+    <p class="card-meta">
+      <% if (player.taille_cm) { %><span class="badge">Taille : <%= player.taille_cm %> cm</span> <% } %>
+      <span class="badge">Matchs : <%= player.nb_matchs || 0 %></span>
+    </p>
+  </div>
+</div>
+
 <% if (reports.length === 0) { %>
   <p class="subtitle">Aucun rapport publié pour le moment. Reviens un peu plus tard.</p>
 <% } else { %>

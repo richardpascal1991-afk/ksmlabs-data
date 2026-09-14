@@ -7,7 +7,7 @@
   <div class="alert alert-error"><%= error %></div>
 <% } %>
 
-<form method="post" action="/admin/joueurs">
+<form method="post" action="/admin/joueurs" enctype="multipart/form-data">
   <div class="row">
     <div class="form-group">
       <label for="prenom">Prénom</label>
@@ -22,6 +22,41 @@
     <label for="poste">Poste (optionnel)</label>
     <input type="text" id="poste" name="poste" value="<%= values.poste || '' %>" placeholder="ex : Milieu offensif" />
   </div>
+
+  <h3 style="margin-top:28px;">Photo du joueur</h3>
+  <div class="form-group">
+    <label for="photo">Photo (PNG, JPG ou WEBP)</label>
+    <input type="file" id="photo" name="photo" accept=".png,.jpg,.jpeg,.webp" />
+  </div>
+
+  <h3 style="margin-top:28px;">Club</h3>
+  <div class="row">
+    <div class="form-group">
+      <label for="club_nom">Nom du club</label>
+      <input type="text" id="club_nom" name="club_nom" value="<%= values.club_nom || '' %>" placeholder="ex : FC Exemple" />
+    </div>
+    <div class="form-group">
+      <label for="club_pays">Pays du club</label>
+      <input type="text" id="club_pays" name="club_pays" value="<%= values.club_pays || '' %>" placeholder="ex : France" />
+    </div>
+  </div>
+  <div class="form-group">
+    <label for="club_logo">Logo du club (PNG, JPG ou WEBP)</label>
+    <input type="file" id="club_logo" name="club_logo" accept=".png,.jpg,.jpeg,.webp" />
+  </div>
+
+  <h3 style="margin-top:28px;">Données</h3>
+  <div class="row">
+    <div class="form-group">
+      <label for="taille_cm">Taille (cm)</label>
+      <input type="text" inputmode="numeric" id="taille_cm" name="taille_cm" value="<%= values.taille_cm || '' %>" placeholder="ex : 182" />
+    </div>
+    <div class="form-group">
+      <label for="nb_matchs">Nombre de matchs</label>
+      <input type="text" inputmode="numeric" id="nb_matchs" name="nb_matchs" value="<%= values.nb_matchs || '' %>" placeholder="ex : 12" />
+    </div>
+  </div>
+
   <button type="submit" class="btn">Créer le joueur</button>
 </form>
 

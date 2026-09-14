@@ -30,7 +30,12 @@
   <h2>Vidéos</h2>
   <div class="video-grid">
     <% videos.forEach(v => { %>
-      <% if (v.embedUrl) { %>
+      <% if (v.filename) { %>
+        <div>
+          <video controls style="width:100%;border-radius:8px;background:#000;" src="/media/rapport-video/<%= v.id %>"></video>
+          <p class="card-meta" style="margin-top:6px;"><%= v.original_name || v.label %></p>
+        </div>
+      <% } else if (v.embedUrl) { %>
         <div>
           <div class="video-embed">
             <iframe src="<%= v.embedUrl %>" title="<%= v.label %>" allowfullscreen loading="lazy"></iframe>
