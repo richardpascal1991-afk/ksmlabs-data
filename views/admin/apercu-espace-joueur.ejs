@@ -99,7 +99,40 @@
     </div>
 
     <div class="tab-panel" id="panel-matchs">
-      <p class="p-placeholder">Onglet Matchs — bientôt disponible dans cet aperçu.</p>
+      <% if (matchs.length === 0) { %>
+        <p class="p-placeholder">Aucun rapport publié pour ce joueur pour l'instant.</p>
+      <% } else { %>
+        <% matchs.forEach(function (m) { %>
+          <div class="p-card match-card">
+            <div class="match-top">
+              <span><%= m.competition || 'Compétition non renseignée' %></span>
+              <span><%= m.dateFr %></span>
+            </div>
+            <div class="match-teams">
+              <div class="match-team">
+                <% if (player.club_logo_filename) { %>
+                  <img class="team-logo" src="/media/club-logo/<%= player.id %>" alt="" />
+                <% } else { %>
+                  <div class="team-logo"><%= (player.club_nom || '?').slice(0, 3).toUpperCase() %></div>
+                <% } %>
+                <span class="team-name"><%= player.club_nom || 'Ton club' %></span>
+              </div>
+              <div class="match-score"><%= m.resultat || 'Score non renseigné' %></div>
+              <div class="match-team">
+                <div class="team-logo"><%= m.adversaire.slice(0, 3).toUpperCase() %></div>
+                <span class="team-name"><%= m.adversaire %></span>
+              </div>
+            </div>
+            <div class="match-meta">
+              <span><% if (m.minutesJouees) { %><b><%= m.minutesJouees %>'</b> jouées<% } else { %>Minutes non renseignées<% } %></span>
+            </div>
+            <div class="match-footer">
+              <span class="status-badge status-ready">Rapport disponible</span>
+              <a class="btn-mini" href="/admin/rapports/<%= m.id %>" target="_blank" rel="noopener">Voir l'analyse</a>
+            </div>
+          </div>
+        <% }) %>
+      <% } %>
     </div>
     <div class="tab-panel" id="panel-analyses">
       <p class="p-placeholder">Onglet Analyses — bientôt disponible dans cet aperçu.</p>

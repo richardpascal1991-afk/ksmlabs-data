@@ -105,6 +105,9 @@ ensureColumn("players", "date_naissance", "TEXT");
 ensureColumn("players", "nationalite", "TEXT");
 ensureColumn("players", "pied_fort", "TEXT");
 
+ensureColumn("reports", "competition", "TEXT");
+ensureColumn("reports", "minutes_jouees", "INTEGER");
+
 ensureColumn("report_videos", "filename", "TEXT");
 ensureColumn("report_videos", "original_name", "TEXT");
 ensureColumn("report_videos", "mimetype", "TEXT");

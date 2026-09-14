@@ -37,6 +37,16 @@ Fichiers ajoutés : `views/admin/apercu-espace-joueur.ejs`, `public/css/apercu-j
 - Les onglets Matchs / Analyses / Data / Progression affichent un message « bientôt disponible » en attendant la prochaine étape.
 - Aucune route existante supprimée, aucune fonctionnalité retirée, aucune donnée de joueur modifiée.
 
+### Étape 4 — Onglet "Matchs" connecté à de vraies données (aperçu bêta)
+
+Fichiers modifiés : `src/db.js`, `src/routes/admin.js`, `views/admin/rapport-form.ejs`, `views/admin/apercu-espace-joueur.ejs`, `public/css/apercu-joueur.css`.
+
+- Base de données : 2 nouvelles colonnes ajoutées à la table `reports` (autorisation donnée par l'agence) : `competition`, `minutes_jouees`. Aucune colonne ni donnée existante modifiée ou supprimée.
+- Formulaire de rapport (création et modification) : ajout des champs "Compétition" et "Minutes jouées", tous deux optionnels.
+- Chaque rapport publié pour un joueur apparaît désormais comme une carte "match" dans l'onglet Matchs de l'aperçu bêta : logo du club (le tien) vs initiales de l'adversaire, date, compétition, résultat, minutes jouées, statut et bouton "Voir l'analyse" qui ouvre le rapport correspondant côté admin.
+- Les champs non renseignés affichent un texte honnête ("Compétition non renseignée", etc.) plutôt qu'une donnée inventée.
+- Toujours aucune route supprimée, aucune fonctionnalité retirée, aucune donnée existante modifiée.
+
 ## Version de référence (avant refonte)
 
 Point de sauvegarde correspondant à la version en ligne avant le début de la refonte (animations joueur, recadrage photo, tableau de bord avec statistiques). Commit local de sauvegarde : "backup avant refonte UI KSM LABS".

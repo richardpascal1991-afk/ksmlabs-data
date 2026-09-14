@@ -327,11 +327,24 @@ router.get("/joueurs/:id/apercu-espace-joueur", (req, res) => {
     .prepare("SELECT created_at FROM reports WHERE player_id = ? ORDER BY created_at DESC LIMIT 1")
     .get(player.id);
 
+  const rapportsBruts = db
+    .prepare("SELECT * FROM reports WHERE player_id = ? ORDER BY date_match DESC, created_at DESC")
+    .all(player.id);
+  const matchs = rapportsBruts.map((r) => ({
+    id: r.id,
+    dateFr: r.date_match ? formatDateFr(r.date_match) : "Date non renseignée",
+    adversaire: r.adversaire || "Adversaire non renseigné",
+    competition: r.competition || null,
+    resultat: r.resultat || null,
+    minutesJouees: r.minutes_jouees || null,
+  }));
+
   res.render("admin/apercu-espace-joueur", {
     player,
     age: calculerAge(player.date_naissance),
     dateNaissanceFr: player.date_naissance ? formatDateFr(player.date_naissance) : null,
     dernierRapportFr: dernierRapport ? formatDateFr(dernierRapport.created_at) : null,
+    matchs,
   });
 });
 
@@ -419,7 +432,7 @@ router.post("/joueurs/:id/rapports", uploadReportFiles, (req, res, next) => {
     const player = db.prepare("SELECT * FROM players WHERE id = ?").get(req.params.id);
     if (!player) return res.status(404).render("404");
 
-    const { titre, date_match, adversaire, resultat, texte } = req.body;
+    const { titre, date_match, adversaire, resultat, texte, competition, minutes_jouees } = req.body;
 
     if (req.uploadError || !titre || !titre.trim()) {
       return res.status(400).render("admin/rapport-form", {
@@ -437,8 +450,8 @@ router.post("/joueurs/:id/rapports", uploadReportFiles, (req, res, next) => {
 
     const result = db
       .prepare(
-        `INSERT INTO reports (player_id, titre, date_match, adversaire, resultat, texte, stats_json)
-         VALUES (?, ?, ?, ?, ?, ?, ?)`
+        `INSERT INTO reports (player_id, titre, date_match, adversaire, resultat, texte, stats_json, competition, minutes_jouees)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
       )
       .run(
         player.id,
@@ -447,7 +460,9 @@ router.post("/joueurs/:id/rapports", uploadReportFiles, (req, res, next) => {
         (adversaire || "").trim(),
         (resultat || "").trim(),
         (texte || "").trim(),
-        JSON.stringify(stats)
+        JSON.stringify(stats),
+        (competition || "").trim(),
+        minutes_jouees ? parseInt(minutes_jouees, 10) : null
       );
 
     const reportId = result.lastInsertRowid;
@@ -496,7 +511,7 @@ router.post("/rapports/:id", uploadReportFiles, (req, res, next) => {
     if (!report) return res.status(404).render("404");
     const player = db.prepare("SELECT * FROM players WHERE id = ?").get(report.player_id);
 
-    const { titre, date_match, adversaire, resultat, texte } = req.body;
+    const { titre, date_match, adversaire, resultat, texte, competition, minutes_jouees } = req.body;
 
     if (req.uploadError || !titre || !titre.trim()) {
       const videos = db.prepare("SELECT * FROM report_videos WHERE report_id = ? ORDER BY ordre").all(report.id);
@@ -517,7 +532,7 @@ router.post("/rapports/:id", uploadReportFiles, (req, res, next) => {
 
     db.prepare(
       `UPDATE reports SET titre = ?, date_match = ?, adversaire = ?, resultat = ?, texte = ?,
-       stats_json = ?, updated_at = datetime('now') WHERE id = ?`
+       stats_json = ?, competition = ?, minutes_jouees = ?, updated_at = datetime('now') WHERE id = ?`
     ).run(
       titre.trim(),
       date_match || null,
@@ -525,6 +540,8 @@ router.post("/rapports/:id", uploadReportFiles, (req, res, next) => {
       (resultat || "").trim(),
       (texte || "").trim(),
       JSON.stringify(stats),
+      (competition || "").trim(),
+      minutes_jouees ? parseInt(minutes_jouees, 10) : null,
       report.id
     );
 

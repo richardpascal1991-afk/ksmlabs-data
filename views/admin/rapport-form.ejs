@@ -32,6 +32,16 @@
       <input type="text" id="resultat" name="resultat" placeholder="ex : 2-1" value="<%= (report && report.resultat) || '' %>" />
     </div>
   </div>
+  <div class="row">
+    <div class="form-group">
+      <label for="competition">Compétition (optionnel)</label>
+      <input type="text" id="competition" name="competition" placeholder="ex : Ligue régionale U19" value="<%= (report && report.competition) || '' %>" />
+    </div>
+    <div class="form-group">
+      <label for="minutes_jouees">Minutes jouées (optionnel)</label>
+      <input type="text" inputmode="numeric" id="minutes_jouees" name="minutes_jouees" placeholder="ex : 90" value="<%= (report && report.minutes_jouees) || '' %>" />
+    </div>
+  </div>
 
   <div class="form-group">
     <label for="texte">Analyse (texte)</label>
