@@ -130,6 +130,17 @@ ensureColumn("players", "pied_fort", "TEXT");
 ensureColumn("reports", "competition", "TEXT");
 ensureColumn("reports", "minutes_jouees", "INTEGER");
 
+// Notes de performance par match (onglet "Data", bêta) : toutes optionnelles,
+// alimentent le radar de compétences, la courbe d'évolution et la
+// comparaison de l'aperçu bêta. Aucune donnée existante modifiée.
+ensureColumn("reports", "note_globale", "REAL");
+ensureColumn("reports", "duels", "REAL");
+ensureColumn("reports", "passes", "REAL");
+ensureColumn("reports", "vitesse", "REAL");
+ensureColumn("reports", "placement", "REAL");
+ensureColumn("reports", "technique", "REAL");
+ensureColumn("reports", "relance", "REAL");
+
 ensureColumn("report_videos", "filename", "TEXT");
 ensureColumn("report_videos", "original_name", "TEXT");
 ensureColumn("report_videos", "mimetype", "TEXT");

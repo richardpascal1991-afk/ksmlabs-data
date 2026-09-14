@@ -43,6 +43,50 @@
     </div>
   </div>
 
+  <h3 style="margin-top:28px;">Données de performance (optionnel — alimentent le radar et la courbe de l'aperçu bêta)</h3>
+  <p class="card-meta" style="margin-bottom:10px;">Note sur 10 pour chaque axe. Laisse vide si tu ne notes pas ce match.</p>
+  <div class="row">
+    <div class="form-group">
+      <label for="note_globale">Note globale du match</label>
+      <input type="text" inputmode="decimal" id="note_globale" name="note_globale" placeholder="ex : 7.5"
+             value="<%= (report && report.note_globale != null) ? report.note_globale : '' %>" />
+    </div>
+  </div>
+  <div class="row">
+    <div class="form-group">
+      <label for="duels">Duels /10</label>
+      <input type="text" inputmode="decimal" id="duels" name="duels" placeholder="/10"
+             value="<%= (report && report.duels != null) ? report.duels : '' %>" />
+    </div>
+    <div class="form-group">
+      <label for="passes">Passes /10</label>
+      <input type="text" inputmode="decimal" id="passes" name="passes" placeholder="/10"
+             value="<%= (report && report.passes != null) ? report.passes : '' %>" />
+    </div>
+    <div class="form-group">
+      <label for="vitesse">Vitesse /10</label>
+      <input type="text" inputmode="decimal" id="vitesse" name="vitesse" placeholder="/10"
+             value="<%= (report && report.vitesse != null) ? report.vitesse : '' %>" />
+    </div>
+  </div>
+  <div class="row">
+    <div class="form-group">
+      <label for="placement">Placement /10</label>
+      <input type="text" inputmode="decimal" id="placement" name="placement" placeholder="/10"
+             value="<%= (report && report.placement != null) ? report.placement : '' %>" />
+    </div>
+    <div class="form-group">
+      <label for="technique">Technique /10</label>
+      <input type="text" inputmode="decimal" id="technique" name="technique" placeholder="/10"
+             value="<%= (report && report.technique != null) ? report.technique : '' %>" />
+    </div>
+    <div class="form-group">
+      <label for="relance">Relance /10</label>
+      <input type="text" inputmode="decimal" id="relance" name="relance" placeholder="/10"
+             value="<%= (report && report.relance != null) ? report.relance : '' %>" />
+    </div>
+  </div>
+
   <div class="form-group">
     <label for="texte">Analyse (texte)</label>
     <textarea id="texte" name="texte" placeholder="Points forts, axes de travail, contexte du match..."><%= (report && report.texte) || '' %></textarea>

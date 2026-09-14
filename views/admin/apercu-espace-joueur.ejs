@@ -175,7 +175,71 @@
       <% } %>
     </div>
     <div class="tab-panel" id="panel-data">
-      <p class="p-placeholder">Onglet Data — bientôt disponible dans cet aperçu.</p>
+      <div class="p-card">
+        <p class="p-card-title">
+          Radar de compétences
+          <% if (radar) { %><span class="real-flag">données réelles</span><% } else { %><span class="example-flag">pas encore disponible</span><% } %>
+        </p>
+        <% if (radar) { %>
+          <div class="radar-wrap">
+            <svg width="260" height="210" viewBox="-40 -10 300 220">
+              <% radar.geometry.grid.forEach(function (ring) { %>
+                <polygon points="<%= ring %>" fill="none" stroke="#262b3a" stroke-width="1" />
+              <% }) %>
+              <% radar.geometry.axisLines.forEach(function (l) { %>
+                <line x1="<%= l.x1 %>" y1="<%= l.y1 %>" x2="<%= l.x2 %>" y2="<%= l.y2 %>" stroke="#262b3a" />
+              <% }) %>
+              <polygon points="<%= radar.geometry.dataPoints %>" fill="rgba(34,211,168,0.22)" stroke="#22d3a8" stroke-width="2" />
+              <% radar.geometry.labels.forEach(function (l) { %>
+                <text x="<%= l.x %>" y="<%= l.y %>" fill="#9aa0b4" font-size="10" text-anchor="<%= l.anchor %>" font-family="Inter, sans-serif"><%= l.text %></text>
+              <% }) %>
+            </svg>
+          </div>
+          <p class="card-meta" style="text-align:center;">Match noté le <%= radar.dateFr %></p>
+        <% } else { %>
+          <p class="p-placeholder">Note les 6 compétences sur un rapport de match (formulaire de rapport) pour activer le radar.</p>
+        <% } %>
+      </div>
+
+      <div class="p-card">
+        <p class="p-card-title">
+          Évolution de la note
+          <% if (evolution) { %><span class="real-flag">données réelles</span><% } else { %><span class="example-flag">pas encore disponible</span><% } %>
+        </p>
+        <% if (evolution) { %>
+          <svg class="line-chart" viewBox="0 0 300 90" preserveAspectRatio="none">
+            <polyline points="<%= evolution.polylinePoints %>" fill="none" stroke="#22d3a8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+          <div class="p-suivi-row" style="margin-top:10px;">
+            <span class="label"><%= evolution.count %> derniers matchs notés</span>
+            <span class="value"><%= evolution.premiereFr %> → <%= evolution.derniereFr %></span>
+          </div>
+        <% } else { %>
+          <p class="p-placeholder">Renseigne la note globale sur au moins 2 matchs pour activer la courbe.</p>
+        <% } %>
+      </div>
+
+      <div class="p-card">
+        <p class="p-card-title">
+          Comparaison avec la moyenne de saison
+          <% if (comparaison) { %><span class="real-flag">données réelles</span><% } else { %><span class="example-flag">pas encore disponible</span><% } %>
+        </p>
+        <% if (comparaison) { %>
+          <div class="trend-list">
+            <% comparaison.forEach(function (c) { %>
+              <div class="trend-row">
+                <span class="label"><%= c.label %></span>
+                <span class="trend-val trend-<%= c.tendance %>">
+                  <%= c.tendance === 'up' ? '▲' : (c.tendance === 'down' ? '▼' : '▬') %>
+                  <%= c.latestFr %>/10 (moyenne saison <%= c.moyenneFr %>/10)
+                </span>
+              </div>
+            <% }) %>
+          </div>
+        <% } else { %>
+          <p class="p-placeholder">Note au moins 2 matchs sur un même axe pour activer la comparaison.</p>
+        <% } %>
+      </div>
     </div>
     <div class="tab-panel" id="panel-progression">
       <p class="p-placeholder">Onglet Progression — bientôt disponible dans cet aperçu.</p>

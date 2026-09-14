@@ -60,6 +60,19 @@ Fichier ajouté : `views/admin/video-corrective-form.ejs`.
 - Les fichiers vidéo déposés sont protégés comme les vidéos de rapport existantes : accessibles uniquement à l'agence ou au joueur concerné, jamais publiquement.
 - Toujours aucune route supprimée, aucune fonctionnalité retirée, aucune donnée existante modifiée.
 
+### Étape 6 — Onglet "Data" connecté à de vraies données (aperçu bêta)
+
+Fichiers modifiés : `src/db.js`, `src/routes/admin.js`, `views/admin/rapport-form.ejs`, `views/admin/apercu-espace-joueur.ejs`, `public/css/apercu-joueur.css`.
+
+- Base de données : 7 nouvelles colonnes optionnelles ajoutées à la table `reports` (autorisation donnée par l'agence) : `note_globale`, `duels`, `passes`, `vitesse`, `placement`, `technique`, `relance` (notes sur 10). Aucune colonne ni donnée existante modifiée ou supprimée.
+- Formulaire de rapport : nouvelle section "Données de performance" (optionnelle) permettant de noter le joueur sur 6 axes (les mêmes que la maquette déjà validée) et sur une note globale, match par match.
+- L'onglet "Data" de l'aperçu bêta affiche désormais :
+  - un radar de compétences réel, basé sur le dernier match entièrement noté sur les 6 axes ;
+  - une courbe d'évolution réelle de la note globale sur les 5 derniers matchs notés ;
+  - une comparaison réelle, axe par axe, entre la dernière valeur notée et la moyenne de la saison (avec indicateur en hausse / stable / en baisse).
+- Tant qu'il n'y a pas assez de matchs notés, chaque bloc affiche un message honnête expliquant ce qu'il faut renseigner pour l'activer, plutôt qu'une donnée inventée.
+- Toujours aucune route supprimée, aucune fonctionnalité retirée, aucune donnée existante modifiée.
+
 ## Version de référence (avant refonte)
 
 Point de sauvegarde correspondant à la version en ligne avant le début de la refonte (animations joueur, recadrage photo, tableau de bord avec statistiques). Commit local de sauvegarde : "backup avant refonte UI KSM LABS".

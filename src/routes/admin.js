@@ -335,6 +335,56 @@ function calculerAge(dateNaissance) {
   return age;
 }
 
+const AXES_RADAR = [
+  { key: "duels", label: "Duels" },
+  { key: "passes", label: "Passes" },
+  { key: "vitesse", label: "Vitesse" },
+  { key: "placement", label: "Placement" },
+  { key: "technique", label: "Technique" },
+  { key: "relance", label: "Relance" },
+];
+
+function formatNoteFr(n) {
+  return n.toFixed(1).replace(".", ",");
+}
+
+// Calcule les points SVG d'un radar régulier à N axes (centre 110,100,
+// rayon 86 — mêmes proportions que la maquette validée), sans dépendre
+// d'une librairie externe.
+function radarGeometry(axesValues) {
+  const cx = 110;
+  const cy = 100;
+  const maxR = 86;
+  const n = axesValues.length;
+  const angleFor = (i) => (-90 + (360 / n) * i) * (Math.PI / 180);
+  const pointAt = (i, r) => {
+    const a = angleFor(i);
+    return { x: cx + r * Math.cos(a), y: cy + r * Math.sin(a) };
+  };
+  const grid = [1, 0.66, 0.33].map((level) =>
+    axesValues
+      .map((_, i) => pointAt(i, maxR * level))
+      .map((p) => `${p.x.toFixed(1)},${p.y.toFixed(1)}`)
+      .join(" ")
+  );
+  const axisLines = axesValues.map((_, i) => {
+    const p = pointAt(i, maxR);
+    return { x1: cx, y1: cy, x2: p.x.toFixed(1), y2: p.y.toFixed(1) };
+  });
+  const dataPoints = axesValues
+    .map((a, i) => pointAt(i, (Math.max(0, Math.min(10, a.value)) / 10) * maxR))
+    .map((p) => `${p.x.toFixed(1)},${p.y.toFixed(1)}`)
+    .join(" ");
+  const labels = axesValues.map((a, i) => {
+    const p = pointAt(i, maxR + 14);
+    let anchor = "middle";
+    if (p.x > cx + 5) anchor = "start";
+    else if (p.x < cx - 5) anchor = "end";
+    return { text: a.label, x: p.x.toFixed(1), y: p.y.toFixed(1), anchor };
+  });
+  return { grid, axisLines, dataPoints, labels };
+}
+
 router.get("/joueurs/:id/apercu-espace-joueur", (req, res) => {
   const player = db.prepare("SELECT * FROM players WHERE id = ?").get(req.params.id);
   if (!player) return res.status(404).render("404");
@@ -377,6 +427,51 @@ router.get("/joueurs/:id/apercu-espace-joueur", (req, res) => {
     };
   });
 
+  // ---- Onglet Data : radar, courbe d'évolution, comparaison ----
+  // rapportsBruts est trié du plus récent au plus ancien.
+
+  let radar = null;
+  const radarReport = rapportsBruts.find((r) => AXES_RADAR.every((a) => r[a.key] !== null && r[a.key] !== undefined));
+  if (radarReport) {
+    radar = {
+      geometry: radarGeometry(AXES_RADAR.map((a) => ({ label: a.label, value: radarReport[a.key] }))),
+      dateFr: radarReport.date_match ? formatDateFr(radarReport.date_match) : formatDateFr(radarReport.created_at),
+    };
+  }
+
+  const matchsAvecNote = rapportsBruts
+    .filter((r) => r.note_globale !== null && r.note_globale !== undefined)
+    .slice(0, 5)
+    .slice()
+    .reverse();
+
+  let evolution = null;
+  if (matchsAvecNote.length >= 2) {
+    const stepX = 300 / (matchsAvecNote.length - 1);
+    const toY = (v) => 84 - (Math.max(0, Math.min(10, v)) / 10) * 78;
+    const polylinePoints = matchsAvecNote
+      .map((r, i) => `${(i * stepX).toFixed(1)},${toY(r.note_globale).toFixed(1)}`)
+      .join(" ");
+    evolution = {
+      polylinePoints,
+      count: matchsAvecNote.length,
+      premiereFr: formatNoteFr(matchsAvecNote[0].note_globale),
+      derniereFr: formatNoteFr(matchsAvecNote[matchsAvecNote.length - 1].note_globale),
+    };
+  }
+
+  const comparaison = AXES_RADAR.map((a) => {
+    const valeurs = rapportsBruts.filter((r) => r[a.key] !== null && r[a.key] !== undefined);
+    if (valeurs.length < 2) return null;
+    const latest = valeurs[0][a.key];
+    const moyenne = valeurs.reduce((sum, r) => sum + r[a.key], 0) / valeurs.length;
+    const diff = latest - moyenne;
+    let tendance = "flat";
+    if (diff > 0.3) tendance = "up";
+    else if (diff < -0.3) tendance = "down";
+    return { label: a.label, latestFr: formatNoteFr(latest), moyenneFr: formatNoteFr(moyenne), tendance };
+  }).filter(Boolean);
+
   res.render("admin/apercu-espace-joueur", {
     player,
     age: calculerAge(player.date_naissance),
@@ -384,6 +479,9 @@ router.get("/joueurs/:id/apercu-espace-joueur", (req, res) => {
     dernierRapportFr: dernierRapport ? formatDateFr(dernierRapport.created_at) : null,
     matchs,
     analyses,
+    radar,
+    evolution,
+    comparaison: comparaison.length ? comparaison : null,
   });
 });
 
@@ -615,6 +713,17 @@ function parseStats(body) {
   return stats;
 }
 
+// Notes de performance (0 à 10, décimales acceptées, virgule ou point) —
+// toujours optionnelles ; une valeur vide ou invalide devient NULL.
+function parseScore(v) {
+  if (v === undefined || v === null) return null;
+  const s = String(v).trim().replace(",", ".");
+  if (s === "") return null;
+  const n = parseFloat(s);
+  if (Number.isNaN(n)) return null;
+  return Math.max(0, Math.min(10, n));
+}
+
 function parseVideos(body) {
   const labels = [].concat(body.video_label || []);
   const urls = [].concat(body.video_url || []);
@@ -637,7 +746,22 @@ router.post("/joueurs/:id/rapports", uploadReportFiles, (req, res, next) => {
     const player = db.prepare("SELECT * FROM players WHERE id = ?").get(req.params.id);
     if (!player) return res.status(404).render("404");
 
-    const { titre, date_match, adversaire, resultat, texte, competition, minutes_jouees } = req.body;
+    const {
+      titre,
+      date_match,
+      adversaire,
+      resultat,
+      texte,
+      competition,
+      minutes_jouees,
+      note_globale,
+      duels,
+      passes,
+      vitesse,
+      placement,
+      technique,
+      relance,
+    } = req.body;
 
     if (req.uploadError || !titre || !titre.trim()) {
       return res.status(400).render("admin/rapport-form", {
@@ -655,8 +779,10 @@ router.post("/joueurs/:id/rapports", uploadReportFiles, (req, res, next) => {
 
     const result = db
       .prepare(
-        `INSERT INTO reports (player_id, titre, date_match, adversaire, resultat, texte, stats_json, competition, minutes_jouees)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+        `INSERT INTO reports
+          (player_id, titre, date_match, adversaire, resultat, texte, stats_json, competition, minutes_jouees,
+           note_globale, duels, passes, vitesse, placement, technique, relance)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
       )
       .run(
         player.id,
@@ -667,7 +793,14 @@ router.post("/joueurs/:id/rapports", uploadReportFiles, (req, res, next) => {
         (texte || "").trim(),
         JSON.stringify(stats),
         (competition || "").trim(),
-        minutes_jouees ? parseInt(minutes_jouees, 10) : null
+        minutes_jouees ? parseInt(minutes_jouees, 10) : null,
+        parseScore(note_globale),
+        parseScore(duels),
+        parseScore(passes),
+        parseScore(vitesse),
+        parseScore(placement),
+        parseScore(technique),
+        parseScore(relance)
       );
 
     const reportId = result.lastInsertRowid;
@@ -716,7 +849,22 @@ router.post("/rapports/:id", uploadReportFiles, (req, res, next) => {
     if (!report) return res.status(404).render("404");
     const player = db.prepare("SELECT * FROM players WHERE id = ?").get(report.player_id);
 
-    const { titre, date_match, adversaire, resultat, texte, competition, minutes_jouees } = req.body;
+    const {
+      titre,
+      date_match,
+      adversaire,
+      resultat,
+      texte,
+      competition,
+      minutes_jouees,
+      note_globale,
+      duels,
+      passes,
+      vitesse,
+      placement,
+      technique,
+      relance,
+    } = req.body;
 
     if (req.uploadError || !titre || !titre.trim()) {
       const videos = db.prepare("SELECT * FROM report_videos WHERE report_id = ? ORDER BY ordre").all(report.id);
@@ -737,7 +885,9 @@ router.post("/rapports/:id", uploadReportFiles, (req, res, next) => {
 
     db.prepare(
       `UPDATE reports SET titre = ?, date_match = ?, adversaire = ?, resultat = ?, texte = ?,
-       stats_json = ?, competition = ?, minutes_jouees = ?, updated_at = datetime('now') WHERE id = ?`
+       stats_json = ?, competition = ?, minutes_jouees = ?,
+       note_globale = ?, duels = ?, passes = ?, vitesse = ?, placement = ?, technique = ?, relance = ?,
+       updated_at = datetime('now') WHERE id = ?`
     ).run(
       titre.trim(),
       date_match || null,
@@ -747,6 +897,13 @@ router.post("/rapports/:id", uploadReportFiles, (req, res, next) => {
       JSON.stringify(stats),
       (competition || "").trim(),
       minutes_jouees ? parseInt(minutes_jouees, 10) : null,
+      parseScore(note_globale),
+      parseScore(duels),
+      parseScore(passes),
+      parseScore(vitesse),
+      parseScore(placement),
+      parseScore(technique),
+      parseScore(relance),
       report.id
     );
 

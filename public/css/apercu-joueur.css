@@ -165,6 +165,17 @@ body {
 .btn-mini { background: var(--accent); color: #06120e; border: none; border-radius: 8px; padding: 7px 14px; font-size: 12px; font-weight: 700; text-decoration: none; display: inline-block; }
 .btn-mini:hover { text-decoration: none; background: var(--accent-dark); }
 
+/* ---- Data (radar, courbe, comparaison) ---- */
+.radar-wrap { display: flex; justify-content: center; margin-bottom: 8px; }
+.line-chart { width: 100%; height: 90px; }
+.trend-list { display: flex; flex-direction: column; gap: 10px; }
+.trend-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 13px; }
+.trend-row .label { color: var(--text-dim); flex-shrink: 0; }
+.trend-val { display: flex; align-items: center; gap: 6px; font-weight: 700; text-align: right; }
+.trend-up { color: #6ee7c4; }
+.trend-down { color: #fca5a5; }
+.trend-flat { color: var(--text-dim); }
+
 /* ---- Analyses (vidéos correctives) ---- */
 .analyse-card { padding: 16px; }
 .analyse-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
