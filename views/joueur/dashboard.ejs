@@ -1,0 +1,21 @@
+<%- include('../partials/header', { title: 'Mes rapports' }) %>
+
+<h1>Bonjour <%= player.prenom %></h1>
+<p class="subtitle">Tes rapports d'analyse vidéo</p>
+
+<% if (reports.length === 0) { %>
+  <p class="subtitle">Aucun rapport publié pour le moment. Reviens un peu plus tard.</p>
+<% } else { %>
+  <% reports.forEach(r => { %>
+    <a class="card-link" href="/joueur/rapports/<%= r.id %>">
+      <p class="card-title"><%= r.titre %></p>
+      <p class="card-meta">
+        <% if (r.adversaire) { %>vs <%= r.adversaire %> · <% } %>
+        <%= r.date_match || 'date non renseignée' %>
+        <% if (r.resultat) { %> · <%= r.resultat %><% } %>
+      </p>
+    </a>
+  <% }) %>
+<% } %>
+
+<%- include('../partials/footer') %>

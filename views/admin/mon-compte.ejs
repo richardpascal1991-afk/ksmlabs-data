@@ -1,0 +1,25 @@
+<%- include('../partials/header', { title: 'Mon compte' }) %>
+
+<h1>Mon compte</h1>
+<p class="subtitle">Modifier mon mot de passe administrateur</p>
+
+<% if (error) { %><div class="alert alert-error"><%= error %></div><% } %>
+<% if (success) { %><div class="alert alert-success"><%= success %></div><% } %>
+
+<form method="post" action="/admin/mon-compte">
+  <div class="form-group">
+    <label for="current_password">Mot de passe actuel</label>
+    <input type="password" id="current_password" name="current_password" autocomplete="current-password" required />
+  </div>
+  <div class="form-group">
+    <label for="new_password">Nouveau mot de passe</label>
+    <input type="password" id="new_password" name="new_password" autocomplete="new-password" required minlength="8" />
+  </div>
+  <div class="form-group">
+    <label for="confirm_password">Confirmer le nouveau mot de passe</label>
+    <input type="password" id="confirm_password" name="confirm_password" autocomplete="new-password" required minlength="8" />
+  </div>
+  <button type="submit" class="btn">Mettre à jour</button>
+</form>
+
+<%- include('../partials/footer') %>

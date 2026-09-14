@@ -1,0 +1,24 @@
+<%- include('../partials/header', { title: 'Joueurs' }) %>
+
+<h1>Joueurs</h1>
+<p class="subtitle"><%= players.length %> joueur(s)</p>
+
+<div class="actions" style="margin-bottom:20px;">
+  <a class="btn" href="/admin/joueurs/nouveau">+ Ajouter un joueur</a>
+</div>
+
+<% if (players.length === 0) { %>
+  <p class="subtitle">Aucun joueur enregistré pour l'instant.</p>
+<% } else { %>
+  <% players.forEach(p => { %>
+    <a class="card-link" href="/admin/joueurs/<%= p.id %>">
+      <p class="card-title">
+        <%= p.prenom %> <%= p.nom %>
+        <% if (!p.actif) { %><span class="badge badge-inactive">inactif</span><% } %>
+      </p>
+      <p class="card-meta"><%= p.poste || 'poste non renseigné' %> · identifiant : <%= p.identifiant %></p>
+    </a>
+  <% }) %>
+<% } %>
+
+<%- include('../partials/footer') %>

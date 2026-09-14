@@ -1,0 +1,28 @@
+<%- include('../partials/header', { title: 'Mon compte' }) %>
+
+<h1>Mon compte</h1>
+<p class="subtitle">Modifier mon code d'accès</p>
+
+<% if (mustChange) { %>
+  <div class="alert alert-info">Pour ta sécurité, choisis ton propre code avant de continuer (l'agence ne doit plus connaître ton code une fois que tu l'as changé).</div>
+<% } %>
+<% if (error) { %><div class="alert alert-error"><%= error %></div><% } %>
+<% if (success) { %><div class="alert alert-success"><%= success %></div><% } %>
+
+<form method="post" action="/joueur/mon-compte">
+  <div class="form-group">
+    <label for="current_code">Code actuel</label>
+    <input type="password" id="current_code" name="current_code" autocomplete="current-password" required />
+  </div>
+  <div class="form-group">
+    <label for="new_code">Nouveau code</label>
+    <input type="password" id="new_code" name="new_code" autocomplete="new-password" required minlength="4" />
+  </div>
+  <div class="form-group">
+    <label for="confirm_code">Confirmer le nouveau code</label>
+    <input type="password" id="confirm_code" name="confirm_code" autocomplete="new-password" required minlength="4" />
+  </div>
+  <button type="submit" class="btn">Mettre à jour</button>
+</form>
+
+<%- include('../partials/footer') %>

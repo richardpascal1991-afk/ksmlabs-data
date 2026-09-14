@@ -1,0 +1,125 @@
+<%- include('../partials/header', { title: (typeof editing !== 'undefined' && editing) ? 'Modifier le rapport' : 'Nouveau rapport' }) %>
+
+<h1><%= (typeof editing !== 'undefined' && editing) ? 'Modifier le rapport' : 'Nouveau rapport' %></h1>
+<p class="subtitle">Joueur : <%= player.prenom %> <%= player.nom %></p>
+
+<% if (error) { %>
+  <div class="alert alert-error"><%= error %></div>
+<% } %>
+
+<form method="post"
+      action="<%= (typeof editing !== 'undefined' && editing) ? '/admin/rapports/' + report.id : '/admin/joueurs/' + player.id + '/rapports' %>"
+      enctype="multipart/form-data">
+
+  <div class="form-group">
+    <label for="titre">Titre du rapport</label>
+    <input type="text" id="titre" name="titre" required
+           value="<%= (report && report.titre) || '' %>"
+           placeholder="ex : Analyse match vs FC Exemple" />
+  </div>
+
+  <div class="row">
+    <div class="form-group">
+      <label for="date_match">Date du match</label>
+      <input type="date" id="date_match" name="date_match" value="<%= (report && report.date_match) || '' %>" />
+    </div>
+    <div class="form-group">
+      <label for="adversaire">Adversaire</label>
+      <input type="text" id="adversaire" name="adversaire" value="<%= (report && report.adversaire) || '' %>" />
+    </div>
+    <div class="form-group">
+      <label for="resultat">Résultat</label>
+      <input type="text" id="resultat" name="resultat" placeholder="ex : 2-1" value="<%= (report && report.resultat) || '' %>" />
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label for="texte">Analyse (texte)</label>
+    <textarea id="texte" name="texte" placeholder="Points forts, axes de travail, contexte du match..."><%= (report && report.texte) || '' %></textarea>
+  </div>
+
+  <h3>Statistiques</h3>
+  <div id="stats-rows">
+    <% const statRows = stats.length ? stats : [{label:'',value:''}]; %>
+    <% statRows.forEach(s => { %>
+      <div class="row stat-row">
+        <div class="form-group">
+          <label>Libellé</label>
+          <input type="text" name="stat_label" placeholder="ex : Distance parcourue" value="<%= s.label %>" />
+        </div>
+        <div class="form-group">
+          <label>Valeur</label>
+          <input type="text" name="stat_value" placeholder="ex : 10,4 km" value="<%= s.value %>" />
+        </div>
+      </div>
+    <% }) %>
+  </div>
+  <button type="button" class="btn btn-secondary btn-small" onclick="addRow('stats-rows', 'stat-row')">+ Ajouter une statistique</button>
+
+  <h3 style="margin-top:28px;">Liens vidéo (Hudl, SportsCode, YouTube...)</h3>
+  <div id="video-rows">
+    <% const videoRows = videos.length ? videos : [{label:'',url:''}]; %>
+    <% videoRows.forEach(v => { %>
+      <div class="row video-row">
+        <div class="form-group">
+          <label>Libellé</label>
+          <input type="text" name="video_label" placeholder="ex : Buts et occasions" value="<%= v.label %>" />
+        </div>
+        <div class="form-group">
+          <label>Lien</label>
+          <input type="url" name="video_url" placeholder="https://..." value="<%= v.url %>" />
+        </div>
+      </div>
+    <% }) %>
+  </div>
+  <button type="button" class="btn btn-secondary btn-small" onclick="addRow('video-rows', 'video-row')">+ Ajouter un lien vidéo</button>
+  <p class="card-meta" style="margin-top:8px;">Les liens YouTube sont intégrés directement. Les liens Hudl / SportsCode / Wyscout s'ouvrent dans un nouvel onglet.</p>
+
+  <h3 style="margin-top:28px;">Images / PDF (exports Canva, captures...)</h3>
+  <% if (typeof images !== 'undefined' && images.length) { %>
+    <div class="image-grid" style="margin-bottom:14px;">
+      <% images.forEach(img => { %>
+        <div>
+          <% if (img.filename.endsWith('.pdf')) { %>
+            <div class="pdf-tile">PDF<br/><%= img.original_name %></div>
+          <% } else { %>
+            <img src="/media/rapport-image/<%= img.id %>" alt="<%= img.original_name || '' %>" />
+          <% } %>
+          <div class="checkbox-row" style="margin-top:6px;">
+            <input type="checkbox" id="rm-<%= img.id %>" name="remove_image" value="<%= img.id %>" />
+            <label for="rm-<%= img.id %>" style="margin:0;">Supprimer</label>
+          </div>
+        </div>
+      <% }) %>
+    </div>
+  <% } %>
+  <div class="form-group">
+    <label for="images">Ajouter des fichiers (PNG, JPG, WEBP ou PDF — 15 Mo max chacun)</label>
+    <input type="file" id="images" name="images" accept=".png,.jpg,.jpeg,.webp,.pdf" multiple />
+  </div>
+
+  <div class="actions">
+    <button type="submit" class="btn">Enregistrer le rapport</button>
+    <a class="btn btn-secondary" href="/admin/joueurs/<%= player.id %>">Annuler</a>
+  </div>
+</form>
+
+<% if (typeof editing !== 'undefined' && editing) { %>
+  <form method="post" action="/admin/rapports/<%= report.id %>/supprimer"
+        onsubmit="return confirm('Supprimer définitivement ce rapport ?');" style="margin-top:24px;">
+    <button type="submit" class="btn btn-danger btn-small">Supprimer ce rapport</button>
+  </form>
+<% } %>
+
+<script>
+  function addRow(containerId, rowClass) {
+    const container = document.getElementById(containerId);
+    const rows = container.querySelectorAll('.' + rowClass);
+    const last = rows[rows.length - 1];
+    const clone = last.cloneNode(true);
+    clone.querySelectorAll('input').forEach(i => (i.value = ''));
+    container.appendChild(clone);
+  }
+</script>
+
+<%- include('../partials/footer') %>

@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title><%= typeof title !== "undefined" ? title + " — " + agencyName : agencyName %></title>
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="/">
+        <span class="brand-mark">KS</span>
+        <span class="brand-name"><%= agencyName %></span>
+      </a>
+      <nav class="topnav">
+        <% if (isAdmin) { %>
+          <a href="/admin">Tableau de bord</a>
+          <a href="/admin/joueurs">Joueurs</a>
+          <a href="/admin/mon-compte">Mon compte</a>
+          <form action="/logout" method="post" class="inline-form">
+            <button type="submit" class="link-button">Déconnexion</button>
+          </form>
+        <% } else if (isPlayer) { %>
+          <a href="/joueur">Mes rapports</a>
+          <a href="/joueur/mon-compte">Mon compte</a>
+          <form action="/logout" method="post" class="inline-form">
+            <button type="submit" class="link-button">Déconnexion</button>
+          </form>
+        <% } %>
+      </nav>
+    </div>
+  </header>
+  <main class="container">

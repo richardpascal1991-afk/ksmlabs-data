@@ -1,0 +1,26 @@
+<%- include('../partials/header', { title: 'Connexion joueur' }) %>
+
+<div class="login-wrap">
+  <h1>Espace joueur</h1>
+  <p class="subtitle">Connecte-toi avec l'identifiant et le code fournis par l'agence</p>
+
+  <% if (error) { %>
+    <div class="alert alert-error"><%= error %></div>
+  <% } %>
+
+  <form method="post" action="/joueur/login">
+    <div class="form-group">
+      <label for="identifiant">Identifiant</label>
+      <input type="text" id="identifiant" name="identifiant" autocomplete="username" required autofocus />
+    </div>
+    <div class="form-group">
+      <label for="code">Code d'accès</label>
+      <input type="password" id="code" name="code" autocomplete="current-password" required />
+    </div>
+    <button type="submit" class="btn">Se connecter</button>
+  </form>
+
+  <p style="margin-top:20px;"><a href="/admin/login">← Espace agence</a></p>
+</div>
+
+<%- include('../partials/footer') %>

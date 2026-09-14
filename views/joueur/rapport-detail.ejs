@@ -1,0 +1,67 @@
+<%- include('../partials/header', { title: report.titre }) %>
+
+<p><a href="/joueur">← Mes rapports</a></p>
+
+<h1><%= report.titre %></h1>
+<p class="subtitle">
+  <% if (report.adversaire) { %>vs <%= report.adversaire %> · <% } %>
+  <%= report.date_match || 'date non renseignée' %>
+  <% if (report.resultat) { %> · <%= report.resultat %><% } %>
+</p>
+
+<% if (report.texte) { %>
+  <div class="card">
+    <p style="white-space: pre-wrap; margin:0;"><%= report.texte %></p>
+  </div>
+<% } %>
+
+<% if (stats.length) { %>
+  <h2>Statistiques</h2>
+  <div class="card">
+    <table>
+      <% stats.forEach(s => { %>
+        <tr><th><%= s.label %></th><td><%= s.value %></td></tr>
+      <% }) %>
+    </table>
+  </div>
+<% } %>
+
+<% if (videos.length) { %>
+  <h2>Vidéos</h2>
+  <div class="video-grid">
+    <% videos.forEach(v => { %>
+      <% if (v.embedUrl) { %>
+        <div>
+          <div class="video-embed">
+            <iframe src="<%= v.embedUrl %>" title="<%= v.label %>" allowfullscreen loading="lazy"></iframe>
+          </div>
+          <p class="card-meta" style="margin-top:6px;"><%= v.label %></p>
+        </div>
+      <% } else { %>
+        <div class="video-link-card">
+          <p class="card-title" style="margin-bottom:8px;"><%= v.label %></p>
+          <a class="btn btn-secondary btn-small" href="<%= v.url %>" target="_blank" rel="noopener noreferrer">Ouvrir la vidéo ↗</a>
+        </div>
+      <% } %>
+    <% }) %>
+  </div>
+<% } %>
+
+<% if (images.length) { %>
+  <h2>Documents</h2>
+  <div class="image-grid">
+    <% images.forEach(img => { %>
+      <% if (img.filename.endsWith('.pdf')) { %>
+        <a href="/media/rapport-image/<%= img.id %>" target="_blank" rel="noopener noreferrer" class="pdf-tile">
+          PDF<br/><%= img.original_name || 'Document' %>
+        </a>
+      <% } else { %>
+        <a href="/media/rapport-image/<%= img.id %>" target="_blank" rel="noopener noreferrer">
+          <img src="/media/rapport-image/<%= img.id %>" alt="<%= img.original_name || '' %>" />
+        </a>
+      <% } %>
+    <% }) %>
+  </div>
+<% } %>
+
+<%- include('../partials/footer') %>

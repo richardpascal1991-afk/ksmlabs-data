@@ -1,0 +1,12 @@
+<%- include('partials/header', { title: 'Accueil' }) %>
+
+<div class="login-choice">
+  <h1><%= agencyName %></h1>
+  <p class="subtitle">Plateforme d'analyse vidéo — rapports individuels des joueurs</p>
+  <div class="options">
+    <a class="btn" href="/joueur/login">Espace joueur</a>
+    <a class="btn btn-secondary" href="/admin/login">Espace agence</a>
+  </div>
+</div>
+
+<%- include('partials/footer') %>

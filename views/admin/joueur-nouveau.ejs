@@ -1,0 +1,28 @@
+<%- include('../partials/header', { title: 'Ajouter un joueur' }) %>
+
+<h1>Ajouter un joueur</h1>
+<p class="subtitle">Un identifiant et un code d'accès à 6 chiffres seront générés automatiquement.</p>
+
+<% if (error) { %>
+  <div class="alert alert-error"><%= error %></div>
+<% } %>
+
+<form method="post" action="/admin/joueurs">
+  <div class="row">
+    <div class="form-group">
+      <label for="prenom">Prénom</label>
+      <input type="text" id="prenom" name="prenom" value="<%= values.prenom || '' %>" required autofocus />
+    </div>
+    <div class="form-group">
+      <label for="nom">Nom</label>
+      <input type="text" id="nom" name="nom" value="<%= values.nom || '' %>" required />
+    </div>
+  </div>
+  <div class="form-group">
+    <label for="poste">Poste (optionnel)</label>
+    <input type="text" id="poste" name="poste" value="<%= values.poste || '' %>" placeholder="ex : Milieu offensif" />
+  </div>
+  <button type="submit" class="btn">Créer le joueur</button>
+</form>
+
+<%- include('../partials/footer') %>

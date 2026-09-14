@@ -1,0 +1,25 @@
+<%- include('../partials/header', { title: 'Accès joueur' }) %>
+
+<h1><%= reset ? 'Code réinitialisé' : 'Joueur créé' %></h1>
+<p class="subtitle"><%= player.prenom %> <%= player.nom %></p>
+
+<div class="alert alert-info">
+  Ce code ne s'affichera plus jamais. Communique-le au joueur dès maintenant (en main propre, par SMS ou message privé — jamais par un canal partagé).
+</div>
+
+<div class="card-title" style="margin-top:20px;">Identifiant de connexion</div>
+<div class="code-box">
+  <div class="code-value" style="font-size:20px;letter-spacing:1px;"><%= player.identifiant %></div>
+</div>
+
+<div class="card-title">Code d'accès</div>
+<div class="code-box">
+  <div class="code-value"><%= code %></div>
+</div>
+
+<div class="actions">
+  <a class="btn" href="/admin/joueurs/<%= player.id %>">Voir la fiche du joueur</a>
+  <a class="btn btn-secondary" href="/admin/joueurs">Retour à la liste</a>
+</div>
+
+<%- include('../partials/footer') %>

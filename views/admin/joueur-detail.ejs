@@ -1,0 +1,61 @@
+<%- include('../partials/header', { title: player.prenom + ' ' + player.nom }) %>
+
+<h1><%= player.prenom %> <%= player.nom %> <% if (!player.actif) { %><span class="badge badge-inactive">inactif</span><% } %></h1>
+<p class="subtitle">Identifiant de connexion : <strong><%= player.identifiant %></strong></p>
+
+<div class="card">
+  <h3 style="margin-top:0;">Informations</h3>
+  <form method="post" action="/admin/joueurs/<%= player.id %>">
+    <div class="row">
+      <div class="form-group">
+        <label for="prenom">Prénom</label>
+        <input type="text" id="prenom" name="prenom" value="<%= player.prenom %>" required />
+      </div>
+      <div class="form-group">
+        <label for="nom">Nom</label>
+        <input type="text" id="nom" name="nom" value="<%= player.nom %>" required />
+      </div>
+    </div>
+    <div class="form-group">
+      <label for="poste">Poste</label>
+      <input type="text" id="poste" name="poste" value="<%= player.poste || '' %>" />
+    </div>
+    <div class="checkbox-row form-group">
+      <input type="checkbox" id="actif" name="actif" value="1" <%= player.actif ? 'checked' : '' %> />
+      <label for="actif">Compte actif (décoche pour bloquer l'accès sans supprimer les données)</label>
+    </div>
+    <button type="submit" class="btn btn-secondary">Enregistrer</button>
+  </form>
+</div>
+
+<div class="actions" style="margin-bottom:24px;">
+  <form method="post" action="/admin/joueurs/<%= player.id %>/reinitialiser-code" class="inline-form">
+    <button type="submit" class="btn btn-secondary">Régénérer le code d'accès</button>
+  </form>
+  <form method="post" action="/admin/joueurs/<%= player.id %>/supprimer" class="inline-form"
+        onsubmit="return confirm('Supprimer définitivement ce joueur et tous ses rapports ?');">
+    <button type="submit" class="btn btn-danger">Supprimer le joueur</button>
+  </form>
+</div>
+
+<h2>Rapports</h2>
+<div class="actions" style="margin-bottom:16px;">
+  <a class="btn" href="/admin/joueurs/<%= player.id %>/rapports/nouveau">+ Nouveau rapport</a>
+</div>
+
+<% if (reports.length === 0) { %>
+  <p class="subtitle">Aucun rapport publié pour ce joueur.</p>
+<% } else { %>
+  <% reports.forEach(r => { %>
+    <a class="card-link" href="/admin/rapports/<%= r.id %>">
+      <p class="card-title"><%= r.titre %></p>
+      <p class="card-meta">
+        <% if (r.adversaire) { %>vs <%= r.adversaire %> · <% } %>
+        <%= r.date_match || 'date non renseignée' %>
+        <% if (r.resultat) { %> · <%= r.resultat %><% } %>
+      </p>
+    </a>
+  <% }) %>
+<% } %>
+
+<%- include('../partials/footer') %>

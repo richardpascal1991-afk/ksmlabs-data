@@ -1,0 +1,26 @@
+<%- include('../partials/header', { title: 'Connexion agence' }) %>
+
+<div class="login-wrap">
+  <h1>Espace agence</h1>
+  <p class="subtitle">Connexion administrateur</p>
+
+  <% if (error) { %>
+    <div class="alert alert-error"><%= error %></div>
+  <% } %>
+
+  <form method="post" action="/admin/login">
+    <div class="form-group">
+      <label for="username">Identifiant</label>
+      <input type="text" id="username" name="username" autocomplete="username" required autofocus />
+    </div>
+    <div class="form-group">
+      <label for="password">Mot de passe</label>
+      <input type="password" id="password" name="password" autocomplete="current-password" required />
+    </div>
+    <button type="submit" class="btn">Se connecter</button>
+  </form>
+
+  <p style="margin-top:20px;"><a href="/joueur/login">← Je suis un joueur</a></p>
+</div>
+
+<%- include('../partials/footer') %>

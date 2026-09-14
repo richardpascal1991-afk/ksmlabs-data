@@ -1,0 +1,26 @@
+<%- include('../partials/header', { title: 'Tableau de bord' }) %>
+
+<h1>Tableau de bord</h1>
+<p class="subtitle">Bienvenue <%= adminUsername %> — <%= players.length %> joueur(s) suivi(s), <%= reportCount %> rapport(s) au total.</p>
+
+<div class="actions" style="margin-bottom:28px;">
+  <a class="btn" href="/admin/joueurs/nouveau">+ Ajouter un joueur</a>
+  <a class="btn btn-secondary" href="/admin/joueurs">Voir tous les joueurs</a>
+</div>
+
+<h2>Derniers rapports publiés</h2>
+<% if (recentReports.length === 0) { %>
+  <p class="subtitle">Aucun rapport pour le moment.</p>
+<% } else { %>
+  <% recentReports.forEach(r => { %>
+    <a class="card-link" href="/admin/rapports/<%= r.id %>">
+      <p class="card-title"><%= r.titre %> — <%= r.prenom %> <%= r.nom %></p>
+      <p class="card-meta">
+        <% if (r.adversaire) { %>vs <%= r.adversaire %> · <% } %>
+        <%= r.date_match || 'date non renseignée' %>
+      </p>
+    </a>
+  <% }) %>
+<% } %>
+
+<%- include('../partials/footer') %>
