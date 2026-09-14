@@ -47,6 +47,19 @@ Fichiers modifiés : `src/db.js`, `src/routes/admin.js`, `views/admin/rapport-fo
 - Les champs non renseignés affichent un texte honnête ("Compétition non renseignée", etc.) plutôt qu'une donnée inventée.
 - Toujours aucune route supprimée, aucune fonctionnalité retirée, aucune donnée existante modifiée.
 
+### Étape 5 — Onglet "Analyses" connecté à de vraies données (aperçu bêta)
+
+Fichiers modifiés : `src/db.js`, `src/routes/admin.js`, `src/routes/media.js`, `views/admin/joueur-detail.ejs`, `views/admin/apercu-espace-joueur.ejs`, `public/css/apercu-joueur.css`.
+Fichier ajouté : `views/admin/video-corrective-form.ejs`.
+
+- Base de données : nouvelle table indépendante `videos_correctives` (autorisation donnée par l'agence). Aucune table ni donnée existante n'a été modifiée ou supprimée. Cette table stocke, pour chaque vidéo corrective : le joueur concerné, le match lié (optionnel), le titre, le thème (parmi les 8 catégories définies par l'agence), le commentaire de l'analyste, la durée, un fichier vidéo déposé ou un lien, et deux champs prévus pour le suivi futur "vu" / "compris" côté joueur.
+- Fiche joueur (admin) : nouvelle section "Vidéos correctives" avec bouton "+ Nouvelle vidéo corrective" et liste des vidéos déjà ajoutées, chacune modifiable et supprimable.
+- Nouveau formulaire admin pour créer/modifier une vidéo corrective : titre, thème (liste des 8 catégories), match concerné (optionnel, parmi les rapports déjà publiés), commentaire, durée, dépôt d'un fichier vidéo (MP4/MOV/WEBM, 400 Mo max) ou lien externe (YouTube, Hudl, SportsCode...).
+- L'onglet "Analyses" de l'aperçu bêta affiche désormais chaque vidéo corrective sous forme de carte : thème, titre, match lié, durée, date d'ajout, lecteur vidéo (fichier déposé ou lecteur YouTube intégré) ou lien externe, commentaire de l'analyste.
+- Le statut "Nouveau" / "Vu" et le bouton "J'ai compris" restent affichés en exemple : ils ne pourront devenir réellement fonctionnels que lorsque le joueur utilisera cette interface lui-même (pas encore le cas à ce stade).
+- Les fichiers vidéo déposés sont protégés comme les vidéos de rapport existantes : accessibles uniquement à l'agence ou au joueur concerné, jamais publiquement.
+- Toujours aucune route supprimée, aucune fonctionnalité retirée, aucune donnée existante modifiée.
+
 ## Version de référence (avant refonte)
 
 Point de sauvegarde correspondant à la version en ligne avant le début de la refonte (animations joueur, recadrage photo, tableau de bord avec statistiques). Commit local de sauvegarde : "backup avant refonte UI KSM LABS".

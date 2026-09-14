@@ -1,0 +1,89 @@
+<%- include('../partials/header', { title: (typeof editing !== 'undefined' && editing) ? 'Modifier la vidéo corrective' : 'Nouvelle vidéo corrective' }) %>
+
+<h1><%= (typeof editing !== 'undefined' && editing) ? 'Modifier la vidéo corrective' : 'Nouvelle vidéo corrective' %></h1>
+<p class="subtitle">Joueur : <%= player.prenom %> <%= player.nom %> — apparaîtra dans l'onglet « Analyses » de l'aperçu bêta.</p>
+
+<% if (error) { %>
+  <div class="alert alert-error"><%= error %></div>
+<% } %>
+
+<form method="post"
+      action="<%= (typeof editing !== 'undefined' && editing) ? '/admin/videos-correctives/' + video.id : '/admin/joueurs/' + player.id + '/videos-correctives' %>"
+      enctype="multipart/form-data">
+
+  <div class="form-group">
+    <label for="titre">Titre</label>
+    <input type="text" id="titre" name="titre" required
+           value="<%= (video && video.titre) || '' %>"
+           placeholder="ex : Replacement défensif sur perte de balle" />
+  </div>
+
+  <div class="row">
+    <div class="form-group">
+      <label for="theme">Thème</label>
+      <select id="theme" name="theme" required>
+        <option value="" <%= !(video && video.theme) ? 'selected' : '' %> disabled>Choisir un thème</option>
+        <% themes.forEach(function (t) { %>
+          <option value="<%= t %>" <%= (video && video.theme === t) ? 'selected' : '' %>><%= t %></option>
+        <% }) %>
+      </select>
+    </div>
+    <div class="form-group">
+      <label for="duree">Durée (optionnel)</label>
+      <input type="text" id="duree" name="duree" placeholder="ex : 2 min 30" value="<%= (video && video.duree) || '' %>" />
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label for="report_id">Match concerné (optionnel)</label>
+    <select id="report_id" name="report_id">
+      <option value="">Aucun match précis</option>
+      <% reports.forEach(function (r) { %>
+        <option value="<%= r.id %>" <%= (video && String(video.report_id) === String(r.id)) ? 'selected' : '' %>>
+          <%= r.titre %><% if (r.adversaire) { %> — vs <%= r.adversaire %><% } %><% if (r.date_match) { %> (<%= r.date_match %>)<% } %>
+        </option>
+      <% }) %>
+    </select>
+  </div>
+
+  <div class="form-group">
+    <label for="commentaire">Commentaire de l'analyste</label>
+    <textarea id="commentaire" name="commentaire" placeholder="Ce que le joueur doit comprendre et retenir de cette séquence..."><%= (video && video.commentaire) || '' %></textarea>
+  </div>
+
+  <h3 style="margin-top:28px;">Vidéo</h3>
+  <% if (video && video.filename) { %>
+    <div style="margin-bottom:14px;max-width:420px;">
+      <video controls style="width:100%;border-radius:8px;background:#000;" src="/media/video-corrective/<%= video.id %>"></video>
+      <p class="card-meta" style="margin-top:6px;"><%= video.original_name %></p>
+      <div class="checkbox-row">
+        <input type="checkbox" id="remove_video_file" name="remove_video_file" value="1" />
+        <label for="remove_video_file" style="margin:0;">Supprimer ce fichier vidéo</label>
+      </div>
+    </div>
+  <% } %>
+  <div class="form-group">
+    <label for="video_corrective_file">Déposer un fichier vidéo (MP4, MOV, WEBM — 400 Mo max)</label>
+    <input type="file" id="video_corrective_file" name="video_corrective_file" accept=".mp4,.mov,.webm,.m4v" />
+  </div>
+  <div class="form-group">
+    <label for="video_corrective_url">Ou un lien vidéo (YouTube, Hudl, SportsCode...)</label>
+    <input type="url" id="video_corrective_url" name="video_corrective_url" placeholder="https://..."
+           value="<%= (video && video.url) || '' %>" />
+  </div>
+  <p class="card-meta">Un seul des deux suffit (fichier déposé ou lien). Si les deux sont vides, la vidéo apparaîtra sans lecteur, avec le commentaire seul.</p>
+
+  <div class="actions">
+    <button type="submit" class="btn">Enregistrer</button>
+    <a class="btn btn-secondary" href="/admin/joueurs/<%= player.id %>">Annuler</a>
+  </div>
+</form>
+
+<% if (typeof editing !== 'undefined' && editing) { %>
+  <form method="post" action="/admin/videos-correctives/<%= video.id %>/supprimer"
+        data-confirm="Supprimer définitivement cette vidéo corrective ?" style="margin-top:24px;">
+    <button type="submit" class="btn btn-danger btn-small">Supprimer cette vidéo</button>
+  </form>
+<% } %>
+
+<%- include('../partials/footer') %>

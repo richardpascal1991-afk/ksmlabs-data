@@ -7,7 +7,7 @@ const bcrypt = require("bcryptjs");
 
 const { db, UPLOADS_DIR } = require("../db");
 const { requireAdmin } = require("../middleware/auth");
-const { generateAccessCode, slugifyIdentifiant, formatDateFr } = require("../utils");
+const { generateAccessCode, slugifyIdentifiant, formatDateFr, getEmbeddableVideo } = require("../utils");
 
 const router = express.Router();
 router.use(requireAdmin);
@@ -36,14 +36,16 @@ const ALLOWED_VIDEO_MIME = {
 
 function mimeMapFor(fieldname) {
   if (fieldname === "images") return ALLOWED_IMAGE_MIME;
-  if (fieldname === "video_files") return ALLOWED_VIDEO_MIME;
+  if (fieldname === "video_files" || fieldname === "video_corrective_file") return ALLOWED_VIDEO_MIME;
   if (fieldname === "photo" || fieldname === "club_logo") return ALLOWED_PLAYER_MEDIA_MIME;
   return {};
 }
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    const sub = file.fieldname === "photo" || file.fieldname === "club_logo" ? "players" : "reports";
+    let sub = "reports";
+    if (file.fieldname === "photo" || file.fieldname === "club_logo") sub = "players";
+    else if (file.fieldname === "video_corrective_file") sub = "correctives";
     const dir = path.join(UPLOADS_DIR, sub);
     fs.mkdirSync(dir, { recursive: true });
     cb(null, dir);
@@ -92,6 +94,14 @@ function uploadPlayerFiles(req, res, next) {
     { name: "photo", maxCount: 1 },
     { name: "club_logo", maxCount: 1 },
   ])(req, res, (err) => {
+    if (err) req.uploadError = humanizeUploadError(err);
+    if (!req.files) req.files = {};
+    next();
+  });
+}
+
+function uploadCorrectiveVideo(req, res, next) {
+  upload.fields([{ name: "video_corrective_file", maxCount: 1 }])(req, res, (err) => {
     if (err) req.uploadError = humanizeUploadError(err);
     if (!req.files) req.files = {};
     next();
@@ -223,7 +233,10 @@ router.get("/joueurs/:id", (req, res) => {
   const reports = db
     .prepare("SELECT * FROM reports WHERE player_id = ? ORDER BY date_match DESC, created_at DESC")
     .all(player.id);
-  res.render("admin/joueur-detail", { player, reports, error: null });
+  const videosCorrectives = db
+    .prepare("SELECT * FROM videos_correctives WHERE player_id = ? ORDER BY created_at DESC")
+    .all(player.id);
+  res.render("admin/joueur-detail", { player, reports, videosCorrectives, error: null });
 });
 
 router.post("/joueurs/:id", uploadPlayerFiles, (req, res) => {
@@ -234,7 +247,10 @@ router.post("/joueurs/:id", uploadPlayerFiles, (req, res) => {
     const reports = db
       .prepare("SELECT * FROM reports WHERE player_id = ? ORDER BY date_match DESC, created_at DESC")
       .all(player.id);
-    return res.status(400).render("admin/joueur-detail", { player, reports, error: req.uploadError });
+    const videosCorrectives = db
+      .prepare("SELECT * FROM videos_correctives WHERE player_id = ? ORDER BY created_at DESC")
+      .all(player.id);
+    return res.status(400).render("admin/joueur-detail", { player, reports, videosCorrectives, error: req.uploadError });
   }
 
   const {
@@ -339,13 +355,195 @@ router.get("/joueurs/:id/apercu-espace-joueur", (req, res) => {
     minutesJouees: r.minutes_jouees || null,
   }));
 
+  const videosBrutes = db
+    .prepare("SELECT * FROM videos_correctives WHERE player_id = ? ORDER BY created_at DESC")
+    .all(player.id);
+  const analyses = videosBrutes.map((v) => {
+    const rapportLie = v.report_id ? rapportsBruts.find((r) => r.id === v.report_id) : null;
+    return {
+      id: v.id,
+      titre: v.titre,
+      theme: v.theme,
+      commentaire: v.commentaire || "",
+      duree: v.duree || null,
+      matchLabel: rapportLie
+        ? (rapportLie.adversaire ? "vs " + rapportLie.adversaire : rapportLie.titre)
+        : null,
+      videoSrc: v.filename ? `/media/video-corrective/${v.id}` : null,
+      embedUrl: !v.filename && v.url ? getEmbeddableVideo(v.url) : null,
+      lienExterne: !v.filename && v.url && !getEmbeddableVideo(v.url) ? v.url : null,
+      nouveau: !v.vu_le,
+      createdFr: formatDateFr(v.created_at),
+    };
+  });
+
   res.render("admin/apercu-espace-joueur", {
     player,
     age: calculerAge(player.date_naissance),
     dateNaissanceFr: player.date_naissance ? formatDateFr(player.date_naissance) : null,
     dernierRapportFr: dernierRapport ? formatDateFr(dernierRapport.created_at) : null,
     matchs,
+    analyses,
   });
+});
+
+// ---------- Vidéos correctives (bêta) — alimentent l'onglet "Analyses" ----------
+
+const THEMES_ANALYSES = [
+  "Animation offensive",
+  "Animation défensive",
+  "Transition offensive",
+  "Transition défensive",
+  "Technique individuelle",
+  "Prise d'information",
+  "Prise de décision",
+  "CPA",
+];
+
+function reportsPourSelect(playerId) {
+  return db
+    .prepare(
+      "SELECT id, titre, date_match, adversaire FROM reports WHERE player_id = ? ORDER BY date_match DESC, created_at DESC"
+    )
+    .all(playerId);
+}
+
+router.get("/joueurs/:id/videos-correctives/nouvelle", (req, res) => {
+  const player = db.prepare("SELECT * FROM players WHERE id = ?").get(req.params.id);
+  if (!player) return res.status(404).render("404");
+  res.render("admin/video-corrective-form", {
+    player,
+    video: null,
+    reports: reportsPourSelect(player.id),
+    themes: THEMES_ANALYSES,
+    error: null,
+    editing: false,
+  });
+});
+
+router.post("/joueurs/:id/videos-correctives", uploadCorrectiveVideo, (req, res) => {
+  const player = db.prepare("SELECT * FROM players WHERE id = ?").get(req.params.id);
+  if (!player) return res.status(404).render("404");
+
+  const { titre, theme, commentaire, duree, report_id, video_corrective_url } = req.body;
+
+  if (req.uploadError || !titre || !titre.trim() || !THEMES_ANALYSES.includes(theme)) {
+    return res.status(400).render("admin/video-corrective-form", {
+      player,
+      video: req.body,
+      reports: reportsPourSelect(player.id),
+      themes: THEMES_ANALYSES,
+      error: req.uploadError || "Le titre et le thème sont obligatoires.",
+      editing: false,
+    });
+  }
+
+  let reportIdValue = report_id ? parseInt(report_id, 10) : null;
+  if (reportIdValue && !db.prepare("SELECT 1 FROM reports WHERE id = ? AND player_id = ?").get(reportIdValue, player.id)) {
+    reportIdValue = null;
+  }
+
+  const file = req.files.video_corrective_file && req.files.video_corrective_file[0];
+
+  db.prepare(
+    `INSERT INTO videos_correctives
+      (player_id, report_id, titre, theme, commentaire, duree, url, filename, original_name, mimetype)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+  ).run(
+    player.id,
+    reportIdValue,
+    titre.trim(),
+    theme,
+    (commentaire || "").trim(),
+    (duree || "").trim(),
+    (video_corrective_url || "").trim(),
+    file ? file.filename : null,
+    file ? file.originalname : null,
+    file ? file.mimetype : null
+  );
+
+  res.redirect(`/admin/joueurs/${player.id}`);
+});
+
+router.get("/videos-correctives/:id", (req, res) => {
+  const video = db.prepare("SELECT * FROM videos_correctives WHERE id = ?").get(req.params.id);
+  if (!video) return res.status(404).render("404");
+  const player = db.prepare("SELECT * FROM players WHERE id = ?").get(video.player_id);
+  res.render("admin/video-corrective-form", {
+    player,
+    video,
+    reports: reportsPourSelect(player.id),
+    themes: THEMES_ANALYSES,
+    error: null,
+    editing: true,
+  });
+});
+
+router.post("/videos-correctives/:id", uploadCorrectiveVideo, (req, res) => {
+  const video = db.prepare("SELECT * FROM videos_correctives WHERE id = ?").get(req.params.id);
+  if (!video) return res.status(404).render("404");
+  const player = db.prepare("SELECT * FROM players WHERE id = ?").get(video.player_id);
+
+  const { titre, theme, commentaire, duree, report_id, video_corrective_url, remove_video_file } = req.body;
+
+  if (req.uploadError || !titre || !titre.trim() || !THEMES_ANALYSES.includes(theme)) {
+    return res.status(400).render("admin/video-corrective-form", {
+      player,
+      video: { ...video, ...req.body },
+      reports: reportsPourSelect(player.id),
+      themes: THEMES_ANALYSES,
+      error: req.uploadError || "Le titre et le thème sont obligatoires.",
+      editing: true,
+    });
+  }
+
+  let reportIdValue = report_id ? parseInt(report_id, 10) : null;
+  if (reportIdValue && !db.prepare("SELECT 1 FROM reports WHERE id = ? AND player_id = ?").get(reportIdValue, player.id)) {
+    reportIdValue = null;
+  }
+
+  const file = req.files.video_corrective_file && req.files.video_corrective_file[0];
+  let filename = video.filename;
+  let originalName = video.original_name;
+  let mimetype = video.mimetype;
+
+  if (file) {
+    if (video.filename) fs.rm(path.join(UPLOADS_DIR, "correctives", video.filename), { force: true }, () => {});
+    filename = file.filename;
+    originalName = file.originalname;
+    mimetype = file.mimetype;
+  } else if (remove_video_file && video.filename) {
+    fs.rm(path.join(UPLOADS_DIR, "correctives", video.filename), { force: true }, () => {});
+    filename = null;
+    originalName = null;
+    mimetype = null;
+  }
+
+  db.prepare(
+    `UPDATE videos_correctives SET report_id = ?, titre = ?, theme = ?, commentaire = ?, duree = ?, url = ?,
+     filename = ?, original_name = ?, mimetype = ? WHERE id = ?`
+  ).run(
+    reportIdValue,
+    titre.trim(),
+    theme,
+    (commentaire || "").trim(),
+    (duree || "").trim(),
+    (video_corrective_url || "").trim(),
+    filename,
+    originalName,
+    mimetype,
+    video.id
+  );
+
+  res.redirect(`/admin/joueurs/${player.id}`);
+});
+
+router.post("/videos-correctives/:id/supprimer", (req, res) => {
+  const video = db.prepare("SELECT * FROM videos_correctives WHERE id = ?").get(req.params.id);
+  if (!video) return res.status(404).render("404");
+  if (video.filename) fs.rm(path.join(UPLOADS_DIR, "correctives", video.filename), { force: true }, () => {});
+  db.prepare("DELETE FROM videos_correctives WHERE id = ?").run(video.id);
+  res.redirect(`/admin/joueurs/${video.player_id}`);
 });
 
 router.post("/joueurs/:id/reinitialiser-code", (req, res) => {
@@ -391,6 +589,13 @@ router.post("/joueurs/:id/supprimer", (req, res) => {
   }
   if (player.club_logo_filename) {
     fs.rm(path.join(UPLOADS_DIR, "players", player.club_logo_filename), { force: true }, () => {});
+  }
+
+  const correctiveVideos = db
+    .prepare("SELECT * FROM videos_correctives WHERE player_id = ? AND filename IS NOT NULL")
+    .all(player.id);
+  for (const cv of correctiveVideos) {
+    fs.rm(path.join(UPLOADS_DIR, "correctives", cv.filename), { force: true }, () => {});
   }
 
   db.prepare("DELETE FROM players WHERE id = ?").run(player.id);

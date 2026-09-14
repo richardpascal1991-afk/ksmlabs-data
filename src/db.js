@@ -76,9 +76,31 @@ CREATE TABLE IF NOT EXISTS report_images (
   ordre INTEGER NOT NULL DEFAULT 0
 );
 
+-- Vidéos correctives (nouvel onglet "Analyses" de l'espace joueur, bêta) :
+-- table entièrement nouvelle et indépendante, aucune table existante n'est
+-- modifiée. Une vidéo corrective appartient toujours à un joueur et peut,
+-- optionnellement, être rattachée à un match (rapport) déjà publié.
+CREATE TABLE IF NOT EXISTS videos_correctives (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  player_id INTEGER NOT NULL REFERENCES players(id) ON DELETE CASCADE,
+  report_id INTEGER REFERENCES reports(id) ON DELETE SET NULL,
+  titre TEXT NOT NULL,
+  theme TEXT NOT NULL,
+  commentaire TEXT,
+  duree TEXT,
+  url TEXT,
+  filename TEXT,
+  original_name TEXT,
+  mimetype TEXT,
+  vu_le TEXT,
+  compris_le TEXT,
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
 CREATE INDEX IF NOT EXISTS idx_reports_player ON reports(player_id);
 CREATE INDEX IF NOT EXISTS idx_videos_report ON report_videos(report_id);
 CREATE INDEX IF NOT EXISTS idx_images_report ON report_images(report_id);
+CREATE INDEX IF NOT EXISTS idx_videos_correctives_player ON videos_correctives(player_id);
 `);
 
 // Migration légère : ajoute les colonnes manquantes sur une base déjà

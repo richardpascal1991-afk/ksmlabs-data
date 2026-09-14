@@ -162,6 +162,27 @@
   <% }) %>
 <% } %>
 
+<h2 style="margin-top:32px;">Vidéos correctives <span class="card-meta">(bêta — onglet « Analyses »)</span></h2>
+<div class="actions" style="margin-bottom:16px;">
+  <a class="btn" href="/admin/joueurs/<%= player.id %>/videos-correctives/nouvelle">+ Nouvelle vidéo corrective</a>
+</div>
+
+<% if (typeof videosCorrectives === 'undefined' || videosCorrectives.length === 0) { %>
+  <div class="empty-state">
+    <p>Aucune vidéo corrective pour ce joueur.</p>
+    <a class="btn btn-small" href="/admin/joueurs/<%= player.id %>/videos-correctives/nouvelle">+ Ajouter la première</a>
+  </div>
+<% } else { %>
+  <% videosCorrectives.forEach(v => { %>
+    <a class="card-link" href="/admin/videos-correctives/<%= v.id %>">
+      <p class="card-title"><%= v.titre %></p>
+      <p class="card-meta">
+        <%= v.theme %><% if (v.duree) { %> · <%= v.duree %><% } %><% if (!v.filename && !v.url) { %> · pas encore de vidéo attachée<% } %>
+      </p>
+    </a>
+  <% }) %>
+<% } %>
+
 <script src="/js/photo-cropper.js" defer></script>
 <script src="/js/stats-animate.js" defer></script>
 

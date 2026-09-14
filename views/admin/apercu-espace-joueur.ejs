@@ -135,7 +135,44 @@
       <% } %>
     </div>
     <div class="tab-panel" id="panel-analyses">
-      <p class="p-placeholder">Onglet Analyses — bientôt disponible dans cet aperçu.</p>
+      <% if (analyses.length === 0) { %>
+        <p class="p-placeholder">Aucune vidéo corrective ajoutée pour ce joueur pour l'instant.</p>
+      <% } else { %>
+        <% analyses.forEach(function (a) { %>
+          <div class="p-card analyse-card">
+            <div class="analyse-top">
+              <span class="theme-badge"><%= a.theme %></span>
+              <span class="status-badge <%= a.nouveau ? 'status-nouveau' : 'status-vu' %>"><%= a.nouveau ? 'Nouveau' : 'Vu' %></span>
+            </div>
+            <p class="analyse-titre"><%= a.titre %></p>
+            <p class="analyse-meta">
+              <% if (a.matchLabel) { %><%= a.matchLabel %> · <% } %>
+              <% if (a.duree) { %><%= a.duree %> · <% } %>
+              <%= a.createdFr %>
+            </p>
+
+            <% if (a.videoSrc) { %>
+              <video controls class="analyse-video" src="<%= a.videoSrc %>"></video>
+            <% } else if (a.embedUrl) { %>
+              <div class="analyse-video-embed">
+                <iframe src="<%= a.embedUrl %>" title="<%= a.titre %>" frameborder="0" allowfullscreen></iframe>
+              </div>
+            <% } else if (a.lienExterne) { %>
+              <a class="btn-mini" href="<%= a.lienExterne %>" target="_blank" rel="noopener">Voir la vidéo ↗</a>
+            <% } else { %>
+              <p class="card-meta" style="margin:10px 0;">Vidéo non disponible pour l'instant.</p>
+            <% } %>
+
+            <% if (a.commentaire) { %>
+              <p class="analyse-commentaire"><%= a.commentaire %></p>
+            <% } %>
+
+            <div class="analyse-footer">
+              <button type="button" class="btn-mini btn-mini-ghost" disabled>J'ai compris (exemple)</button>
+            </div>
+          </div>
+        <% }) %>
+      <% } %>
     </div>
     <div class="tab-panel" id="panel-data">
       <p class="p-placeholder">Onglet Data — bientôt disponible dans cet aperçu.</p>

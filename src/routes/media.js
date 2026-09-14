@@ -51,6 +51,25 @@ router.get("/rapport-video/:videoId", (req, res) => {
   });
 });
 
+// Vidéos correctives (onglet Analyses, bêta) — même logique de droits que
+// les vidéos de rapport : admin ou joueur propriétaire uniquement.
+router.get("/video-corrective/:videoId", (req, res) => {
+  const video = db.prepare("SELECT * FROM videos_correctives WHERE id = ?").get(req.params.videoId);
+  if (!video || !video.filename) return res.status(404).render("404");
+
+  const isAdmin = !!(req.session && req.session.adminId);
+  const isOwningPlayer = !!(req.session && req.session.playerId === video.player_id);
+
+  if (!isAdmin && !isOwningPlayer) {
+    return res.status(403).render("404");
+  }
+
+  const filePath = path.join(UPLOADS_DIR, "correctives", video.filename);
+  res.sendFile(filePath, (err) => {
+    if (err && !res.headersSent) res.status(404).render("404");
+  });
+});
+
 // Photo du joueur — accessible à l'admin et au joueur concerné.
 router.get("/joueur-photo/:playerId", (req, res) => {
   const player = db.prepare("SELECT * FROM players WHERE id = ?").get(req.params.playerId);
