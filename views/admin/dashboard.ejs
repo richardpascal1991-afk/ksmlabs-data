@@ -1,7 +1,30 @@
 <%- include('../partials/header', { title: 'Tableau de bord' }) %>
 
 <h1>Tableau de bord</h1>
-<p class="subtitle">Bienvenue <%= adminUsername %> — <%= players.length %> joueur(s) suivi(s), <%= reportCount %> rapport(s) au total.</p>
+<p class="subtitle">Bienvenue <%= adminUsername %>.</p>
+
+<div class="stat-tiles">
+  <div class="stat-tile">
+    <span class="stat-tile-value" data-countup="<%= activePlayerCount %>">0</span>
+    <span class="stat-tile-label">Joueurs actifs</span>
+  </div>
+  <div class="stat-tile">
+    <span class="stat-tile-value" data-countup="<%= players.length %>">0</span>
+    <span class="stat-tile-label">Joueurs au total</span>
+  </div>
+  <div class="stat-tile">
+    <span class="stat-tile-value" data-countup="<%= reportCount %>">0</span>
+    <span class="stat-tile-label">Rapports publiés</span>
+  </div>
+  <div class="stat-tile">
+    <span class="stat-tile-value" data-countup="<%= reportsThisMonth %>">0</span>
+    <span class="stat-tile-label">Rapports ce mois-ci</span>
+  </div>
+  <div class="stat-tile">
+    <span class="stat-tile-value" data-countup="<%= videoCount %>">0</span>
+    <span class="stat-tile-label">Vidéos déposées</span>
+  </div>
+</div>
 
 <div class="actions" style="margin-bottom:28px;">
   <a class="btn" href="/admin/joueurs/nouveau">+ Ajouter un joueur</a>
@@ -10,7 +33,10 @@
 
 <h2>Derniers rapports publiés</h2>
 <% if (recentReports.length === 0) { %>
-  <p class="subtitle">Aucun rapport pour le moment.</p>
+  <div class="empty-state">
+    <p>Aucun rapport pour le moment.</p>
+    <a class="btn btn-small" href="/admin/joueurs">Publier le premier rapport</a>
+  </div>
 <% } else { %>
   <% recentReports.forEach(r => { %>
     <a class="card-link" href="/admin/rapports/<%= r.id %>">
@@ -22,5 +48,7 @@
     </a>
   <% }) %>
 <% } %>
+
+<script src="/js/stats-animate.js" defer></script>
 
 <%- include('../partials/footer') %>

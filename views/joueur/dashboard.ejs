@@ -26,7 +26,9 @@
 </div>
 
 <% if (reports.length === 0) { %>
-  <p class="subtitle">Aucun rapport publié pour le moment. Reviens un peu plus tard.</p>
+  <div class="empty-state">
+    <p>Aucun rapport publié pour le moment. Reviens un peu plus tard.</p>
+  </div>
 <% } else { %>
   <% reports.forEach(r => { %>
     <a class="card-link" href="/joueur/rapports/<%= r.id %>">

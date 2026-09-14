@@ -8,7 +8,10 @@
 </div>
 
 <% if (players.length === 0) { %>
-  <p class="subtitle">Aucun joueur enregistré pour l'instant.</p>
+  <div class="empty-state">
+    <p>Aucun joueur enregistré pour l'instant.</p>
+    <a class="btn btn-small" href="/admin/joueurs/nouveau">+ Ajouter le premier joueur</a>
+  </div>
 <% } else { %>
   <% players.forEach(p => { %>
     <a class="card-link player-list-link" href="/admin/joueurs/<%= p.id %>">

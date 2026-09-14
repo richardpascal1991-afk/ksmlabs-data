@@ -115,7 +115,10 @@
 </div>
 
 <% if (reports.length === 0) { %>
-  <p class="subtitle">Aucun rapport publié pour ce joueur.</p>
+  <div class="empty-state">
+    <p>Aucun rapport publié pour ce joueur.</p>
+    <a class="btn btn-small" href="/admin/joueurs/<%= player.id %>/rapports/nouveau">+ Publier le premier rapport</a>
+  </div>
 <% } else { %>
   <% reports.forEach(r => { %>
     <a class="card-link" href="/admin/rapports/<%= r.id %>">

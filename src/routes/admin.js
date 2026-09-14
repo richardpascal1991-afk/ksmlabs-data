@@ -110,10 +110,19 @@ router.get("/", (req, res) => {
     )
     .all();
   const reportCount = db.prepare("SELECT COUNT(*) AS n FROM reports").get().n;
+  const activePlayerCount = db.prepare("SELECT COUNT(*) AS n FROM players WHERE actif = 1").get().n;
+  const reportsThisMonth = db
+    .prepare("SELECT COUNT(*) AS n FROM reports WHERE strftime('%Y-%m', created_at) = strftime('%Y-%m', 'now')")
+    .get().n;
+  const videoCount = db.prepare("SELECT COUNT(*) AS n FROM report_videos").get().n;
+
   res.render("admin/dashboard", {
     players,
     recentReports,
     reportCount,
+    activePlayerCount,
+    reportsThisMonth,
+    videoCount,
     adminUsername: req.session.adminUsername,
   });
 });
