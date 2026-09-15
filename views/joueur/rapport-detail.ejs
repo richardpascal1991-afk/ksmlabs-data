@@ -1,6 +1,6 @@
 <%- include('../partials/header', { title: report.titre }) %>
 
-<p><a href="/joueur">← Mes rapports</a></p>
+<p><a href="<%= typeof backHref !== 'undefined' && backHref ? backHref : '/joueur' %>">← <%= typeof backLabel !== 'undefined' && backLabel ? backLabel : 'Mes rapports' %></a></p>
 
 <h1><%= report.titre %></h1>
 <p class="subtitle">

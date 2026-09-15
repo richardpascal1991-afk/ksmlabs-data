@@ -107,6 +107,16 @@ Fichiers modifiés : `src/routes/admin.js`, `src/routes/player.js`, `views/admin
 - Testé en profondeur (ordinateur et mobile) : connexion joueur avec changement de code obligatoire au premier accès, affichage des 5 onglets avec de vraies données (match, note radar, etc.), navigation entre les onglets (onglets du haut et barre du bas), accès à un rapport depuis le nouvel espace, icône réglages → mon compte → retour/déconnexion, aperçu admin identique au vrai espace joueur (non-régression), toutes les routes existantes de l'espace admin toujours fonctionnelles, et vérification de sécurité qu'un joueur ne peut jamais voir les données d'un autre joueur ni accéder aux pages admin. Aucune erreur rencontrée.
 - Toujours aucune route supprimée, aucune fonctionnalité retirée, aucune donnée existante modifiée : l'ancienne page joueur est gardée en réserve dans le code, inutilisée mais jamais supprimée.
 
+### Étape 10 — L'aperçu admin ne mène plus au formulaire d'édition + premier fond visuel "tableau tactique"
+
+Fichiers ajoutés : `public/img/fond-tactique.svg`, `public/img/fond-tactique-header.svg`.
+Fichiers modifiés : `src/routes/admin.js`, `views/admin/apercu-espace-joueur.ejs`, `views/partials/espace-joueur-corps.ejs`, `views/joueur/rapport-detail.ejs`, `public/css/apercu-joueur.css`.
+
+- **Correction d'un détail signalé par l'agence** : dans l'aperçu admin ("Voir comme le joueur"), cliquer sur "Voir l'analyse" depuis l'onglet Matchs ouvrait le formulaire d'édition du rapport (normal, puisque l'agence est connectée en tant qu'admin) — mais cela ne correspondait plus à ce que l'onglet affiche par ailleurs comme étant "exactement ce que le joueur voit". Ce lien ouvre désormais une nouvelle page en lecture seule (`/admin/rapports/:id/lecture-seule`), strictement identique à ce qu'un joueur voit sur sa propre page, sans aucun champ modifiable. Pour modifier un rapport, l'agence passe toujours par la fiche du joueur comme avant — rien n'a changé de ce côté.
+- Pour rappel, ce point ne concernait que l'aperçu admin : côté joueur réel, cette page a toujours été strictement en lecture seule (aucun champ modifiable), vérifié avec deux comptes de test distincts.
+- **Premier habillage visuel "futuriste/tactique"** demandé par l'agence : un fond discret évoquant un tableau tactique de coach (lignes de terrain, trajectoires de passes en pointillés, points de position légèrement lumineux) a été ajouté derrière le nouvel espace joueur — un dessin en fond de page (visible surtout sur grand écran, autour de la colonne centrale) et un bandeau dédié derrière l'en-tête du profil (visible sur tous les écrans, y compris mobile). Purement décoratif, en très faible opacité pour ne jamais gêner la lecture, aucune image ni police externe utilisée (SVG dessiné à la main). Première étape d'un travail plus large d'amélioration visuelle à poursuivre.
+- Testé sur ordinateur et mobile, aucune erreur, aucun impact sur les données ou les fonctionnalités existantes.
+
 ## Version de référence (avant refonte)
 
 Point de sauvegarde correspondant à la version en ligne avant le début de la refonte (animations joueur, recadrage photo, tableau de bord avec statistiques). Commit local de sauvegarde : "backup avant refonte UI KSM LABS".

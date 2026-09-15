@@ -13,6 +13,8 @@
     radar, evolution, comparaison, objectifsActuels, objectifsAtteints,
     pointsForts, axesAmelioration, planTravail,
     rapportBaseUrl   -> "/admin/rapports/" ou "/joueur/rapports/"
+    rapportSuffix    -> "/lecture-seule" (aperçu admin, pour ne jamais ouvrir
+                        le formulaire d'édition) ou absent (vrai joueur)
     rapportTarget    -> "_blank" (aperçu admin) ou "" (vrai joueur)
     settingsHref      -> lien vers "Mon compte" (null = pas d'icône réglages)
 */
@@ -136,7 +138,7 @@
             </div>
             <div class="match-footer">
               <span class="status-badge status-ready">Rapport disponible</span>
-              <a class="btn-mini" href="<%= rapportBaseUrl %><%= m.id %>"<% if (rapportTarget) { %> target="<%= rapportTarget %>" rel="noopener"<% } %>>Voir l'analyse</a>
+              <a class="btn-mini" href="<%= rapportBaseUrl %><%= m.id %><%= typeof rapportSuffix !== 'undefined' && rapportSuffix ? rapportSuffix : '' %>"<% if (rapportTarget) { %> target="<%= rapportTarget %>" rel="noopener"<% } %>>Voir l'analyse</a>
             </div>
           </div>
         <% }) %>

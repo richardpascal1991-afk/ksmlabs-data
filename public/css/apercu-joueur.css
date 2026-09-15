@@ -17,11 +17,25 @@
 * { box-sizing: border-box; }
 html, body { margin: 0; padding: 0; background: var(--bg); color: var(--text); font-family: var(--font); }
 body {
+  position: relative;
   max-width: 430px;
   margin: 0 auto;
   min-height: 100vh;
   background: radial-gradient(600px 340px at 10% -10%, rgba(34, 211, 168, 0.1), transparent 55%), var(--bg);
   padding-bottom: 84px;
+}
+
+/* Fond "tableau tactique" — lignes de jeu et trajectoires en très faible
+   opacité, façon salle de vidéo d'analyse. Couvre tout l'écran (pas juste
+   la colonne de 430px) pour habiller aussi les grands écrans. Purement
+   décoratif : pointer-events désactivés, aucun impact sur le contenu. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background: var(--bg) url("/img/fond-tactique.svg") center / cover no-repeat;
+  pointer-events: none;
 }
 
 @keyframes fadeInUp {
@@ -39,7 +53,13 @@ body {
 }
 .mock-banner a { color: #fcd34d; }
 
-.p-header { padding: 18px 18px 0; animation: fadeInUp 0.45s ease both; }
+.p-header {
+  padding: 18px 18px 20px;
+  animation: fadeInUp 0.45s ease both;
+  background:
+    linear-gradient(to bottom, rgba(11, 13, 18, 0) 45%, var(--bg) 100%),
+    url("/img/fond-tactique-header.svg") top center / cover no-repeat;
+}
 .p-header-top { display: flex; justify-content: flex-end; align-items: center; gap: 10px; margin-bottom: 8px; }
 .p-notif, .p-settings {
   position: relative;

@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1200" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <pattern id="grille" width="60" height="60" patternUnits="userSpaceOnUse">
+      <path d="M60 0 L0 0 0 60" fill="none" stroke="#22d3a8" stroke-width="1" opacity="0.05"/>
+    </pattern>
+    <filter id="lueur" x="-100%" y="-100%" width="300%" height="300%">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <rect width="1200" height="1200" fill="#0b0d12"/>
+  <rect width="1200" height="1200" fill="url(#grille)"/>
+
+  <!-- Grand arc façon rond central de terrain, coin haut-droit -->
+  <circle cx="1050" cy="150" r="320" fill="none" stroke="#22d3a8" stroke-width="1.5" opacity="0.07"/>
+  <circle cx="1050" cy="150" r="230" fill="none" stroke="#22d3a8" stroke-width="1" opacity="0.05"/>
+
+  <!-- Arc bas-gauche, teinte bleutée -->
+  <circle cx="60" cy="1120" r="260" fill="none" stroke="#3b82f6" stroke-width="1.5" opacity="0.06"/>
+
+  <!-- Lignes de position façon terrain (segments orthogonaux, très fins) -->
+  <line x1="0" y1="600" x2="1200" y2="600" stroke="#22d3a8" stroke-width="1" opacity="0.035"/>
+  <line x1="600" y1="0" x2="600" y2="1200" stroke="#22d3a8" stroke-width="1" opacity="0.035"/>
+
+  <!-- Trajectoires tactiques (courbes de passes/mouvements de joueurs) -->
+  <path d="M 120 220 C 260 150, 420 150, 540 260" fill="none" stroke="#22d3a8" stroke-width="2" stroke-dasharray="2 10" stroke-linecap="round" opacity="0.16"/>
+  <path d="M 540 260 C 660 340, 760 340, 880 260" fill="none" stroke="#22d3a8" stroke-width="2" stroke-dasharray="2 10" stroke-linecap="round" opacity="0.14"/>
+  <path d="M 160 820 C 320 760, 420 900, 600 860" fill="none" stroke="#3b82f6" stroke-width="2" stroke-dasharray="2 10" stroke-linecap="round" opacity="0.14"/>
+  <path d="M 600 860 C 760 830, 840 950, 1020 920" fill="none" stroke="#3b82f6" stroke-width="2" stroke-dasharray="2 10" stroke-linecap="round" opacity="0.12"/>
+  <path d="M 780 480 C 900 420, 1000 500, 1080 460" fill="none" stroke="#22d3a8" stroke-width="1.5" stroke-dasharray="1 9" stroke-linecap="round" opacity="0.10"/>
+
+  <!-- Réseau de données (polylignes fines reliant des points, effet "algorithme") -->
+  <polyline points="120,220 300,320 460,300 620,420 780,480" fill="none" stroke="#22d3a8" stroke-width="0.75" opacity="0.06"/>
+  <polyline points="160,820 380,780 560,880 760,840 940,900" fill="none" stroke="#3b82f6" stroke-width="0.75" opacity="0.06"/>
+
+  <!-- Points de position (nœuds), certains avec légère lueur -->
+  <circle cx="120" cy="220" r="4.5" fill="#22d3a8" opacity="0.22" filter="url(#lueur)"/>
+  <circle cx="540" cy="260" r="4.5" fill="#22d3a8" opacity="0.22" filter="url(#lueur)"/>
+  <circle cx="880" cy="260" r="4" fill="#22d3a8" opacity="0.18"/>
+  <circle cx="1080" cy="460" r="4" fill="#22d3a8" opacity="0.16"/>
+  <circle cx="160" cy="820" r="4.5" fill="#3b82f6" opacity="0.22" filter="url(#lueur)"/>
+  <circle cx="600" cy="860" r="4.5" fill="#3b82f6" opacity="0.22" filter="url(#lueur)"/>
+  <circle cx="1020" cy="920" r="4" fill="#3b82f6" opacity="0.18"/>
+
+  <!-- Petits repères "HUD" en croix, façon viseur tactique -->
+  <g stroke="#22d3a8" stroke-width="1" opacity="0.12">
+    <path d="M 300 320 l -10 0 M 300 320 l 0 -10"/>
+    <path d="M 940 900 l 10 0 M 940 900 l 0 10"/>
+    <path d="M 460 300 l -8 0 M 460 300 l 0 -8"/>
+  </g>
+</svg>

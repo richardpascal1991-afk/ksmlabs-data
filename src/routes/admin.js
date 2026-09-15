@@ -7,7 +7,13 @@ const bcrypt = require("bcryptjs");
 
 const { db, UPLOADS_DIR } = require("../db");
 const { requireAdmin } = require("../middleware/auth");
-const { generateAccessCode, slugifyIdentifiant, formatDateFr, getEmbeddableVideo } = require("../utils");
+const {
+  generateAccessCode,
+  slugifyIdentifiant,
+  formatDateFr,
+  getEmbeddableVideo,
+  enrichStatsForDisplay,
+} = require("../utils");
 const { buildEspaceJoueurData } = require("../lib/espace-joueur");
 
 const router = express.Router();
@@ -349,6 +355,35 @@ router.get("/joueurs/:id/apercu-espace-joueur", (req, res) => {
   if (!player) return res.status(404).render("404");
 
   res.render("admin/apercu-espace-joueur", buildEspaceJoueurData(player));
+});
+
+// Depuis l'aperçu ci-dessus, "Voir l'analyse" ouvre CETTE page (lecture seule,
+// strictement identique à ce que le joueur voit) et non le formulaire
+// d'édition — pour que l'aperçu reste un miroir fidèle jusqu'au bout.
+// Pour modifier un rapport, l'agence passe par la fiche du joueur comme avant.
+router.get("/rapports/:id/lecture-seule", (req, res) => {
+  const report = db.prepare("SELECT * FROM reports WHERE id = ?").get(req.params.id);
+  if (!report) return res.status(404).render("404");
+  const player = db.prepare("SELECT * FROM players WHERE id = ?").get(report.player_id);
+
+  const videos = db
+    .prepare("SELECT * FROM report_videos WHERE report_id = ? ORDER BY ordre")
+    .all(report.id)
+    .map((v) => ({ ...v, embedUrl: v.filename ? null : getEmbeddableVideo(v.url) }));
+  const images = db
+    .prepare("SELECT * FROM report_images WHERE report_id = ? ORDER BY ordre")
+    .all(report.id);
+  const stats = enrichStatsForDisplay(JSON.parse(report.stats_json || "[]"));
+
+  res.render("joueur/rapport-detail", {
+    player,
+    report,
+    videos,
+    images,
+    stats,
+    backHref: `/admin/joueurs/${player.id}/apercu-espace-joueur`,
+    backLabel: "Retour à l'aperçu",
+  });
 });
 
 // ---------- Vidéos correctives (bêta) — alimentent l'onglet "Analyses" ----------

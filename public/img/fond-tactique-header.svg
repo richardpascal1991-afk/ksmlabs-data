@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 430 300" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <filter id="lueur-h" x="-100%" y="-100%" width="300%" height="300%">
+      <feGaussianBlur stdDeviation="5" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Radar façon rond central de terrain, coin haut-droit -->
+  <circle cx="385" cy="35" r="190" fill="none" stroke="#22d3a8" stroke-width="1.5" opacity="0.14"/>
+  <circle cx="385" cy="35" r="130" fill="none" stroke="#22d3a8" stroke-width="1" opacity="0.10"/>
+  <circle cx="385" cy="35" r="75" fill="none" stroke="#22d3a8" stroke-width="1" opacity="0.08"/>
+
+  <!-- Trajectoire tactique traversant le bandeau -->
+  <path d="M -10 190 C 90 130, 180 230, 280 170 S 420 120, 460 150" fill="none" stroke="#22d3a8" stroke-width="2" stroke-dasharray="2 10" stroke-linecap="round" opacity="0.20"/>
+  <path d="M -10 80 C 60 40, 140 60, 210 30" fill="none" stroke="#3b82f6" stroke-width="1.5" stroke-dasharray="1 9" stroke-linecap="round" opacity="0.14"/>
+
+  <!-- Nœuds / points de position -->
+  <circle cx="90" cy="130" r="4" fill="#22d3a8" opacity="0.28" filter="url(#lueur-h)"/>
+  <circle cx="280" cy="170" r="3.5" fill="#22d3a8" opacity="0.22"/>
+  <circle cx="210" cy="30" r="3.5" fill="#3b82f6" opacity="0.22"/>
+
+  <!-- Ligne de grille très fine, façon écran tactique -->
+  <line x1="0" y1="240" x2="430" y2="240" stroke="#22d3a8" stroke-width="1" opacity="0.05"/>
+</svg>
