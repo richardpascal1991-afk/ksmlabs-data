@@ -131,6 +131,13 @@ Fichiers modifiés : `src/db.js`, `src/middleware/auth.js`, `src/routes/auth.js`
 - Testé en profondeur (ordinateur et mobile) : connexion avec identifiant/code corrects et incorrects, liste des joueurs et fiche détaillée en lecture seule, consultation d'un rapport en lecture seule avec retour vers la fiche, tous les contrôles de sécurité ci-dessus, et non-régression complète côté admin (liste des joueurs, fiche joueur toujours entièrement modifiable, aperçu "Voir comme le joueur" toujours fonctionnel, page "Mon compte" avec les deux formulaires — mot de passe et accès collaborateurs — fonctionnant chacun indépendamment). Aucune erreur rencontrée.
 - Toujours aucune route supprimée, aucune fonctionnalité retirée, aucune donnée existante modifiée.
 
+### Étape 11.1 — Bouton "Espace collaborateur" sur la page d'accueil
+
+Fichier modifié : `views/accueil.ejs`.
+
+- Petit ajustement demandé par l'agence : la page d'accueil du site (celle qui s'affiche quand personne n'est connecté) proposait seulement deux choix, "Espace joueur" et "Espace agence" — les collaborateurs n'avaient donc aucun moyen de trouver leur page de connexion par eux-mêmes, il fallait leur transmettre un lien direct. Un troisième bouton "Espace collaborateur" a été ajouté, menant directement à leur page de connexion. Toute l'équipe peut désormais simplement aller sur l'adresse principale du site et choisir son espace, comme les joueurs et l'agence.
+- Aucun changement de fonctionnement ailleurs, purement un lien ajouté sur la page d'accueil.
+
 ## Version de référence (avant refonte)
 
 Point de sauvegarde correspondant à la version en ligne avant le début de la refonte (animations joueur, recadrage photo, tableau de bord avec statistiques). Commit local de sauvegarde : "backup avant refonte UI KSM LABS".
