@@ -86,6 +86,13 @@ Fichier ajouté : `views/admin/objectif-form.ejs`.
 
 **Les 5 onglets du nouvel espace joueur (Profil, Matchs, Analyses, Data, Progression) sont maintenant tous connectés à de vraies données dans l'aperçu bêta.** L'espace joueur actuellement utilisé par les joueurs (`/joueur`) n'a à aucun moment été modifié ni remplacé : le remplacement ne se fera qu'après validation complète par l'agence.
 
+### Étape 8 — Icônes de la navigation mobile de l'aperçu bêta
+
+Fichiers modifiés : `views/admin/apercu-espace-joueur.ejs`, `public/css/apercu-joueur.css`.
+
+- Les 5 icônes de la barre de navigation mobile en bas de l'aperçu bêta (Accueil, Matchs, Vidéos, Progression, Profil) étaient de simples cases vides : elles ont été remplacées par de vraies icônes (dessinées directement en SVG, aucune image ni police d'icônes externe), avec un léger effet lumineux vert sur l'onglet actif.
+- Aucun changement de contenu, de route ou de fonctionnalité — uniquement visuel.
+
 ## Version de référence (avant refonte)
 
 Point de sauvegarde correspondant à la version en ligne avant le début de la refonte (animations joueur, recadrage photo, tableau de bord avec statistiques). Commit local de sauvegarde : "backup avant refonte UI KSM LABS".
