@@ -1,47 +1,25 @@
-<%- include('../partials/header', { title: 'Mes rapports' }) %>
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Mon espace — <%= player.prenom %> <%= player.nom %></title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/apercu-joueur.css" />
+</head>
+<body>
 
-<h1>Bonjour <%= player.prenom %></h1>
-<p class="subtitle">Tes rapports d'analyse vidéo</p>
+  <%- include('../partials/espace-joueur-corps', {
+    player, age, dateNaissanceFr, dernierRapportFr, matchs, analyses,
+    radar, evolution, comparaison, objectifsActuels, objectifsAtteints,
+    pointsForts, axesAmelioration, planTravail,
+    rapportBaseUrl: '/joueur/rapports/',
+    rapportTarget: '',
+    settingsHref: '/joueur/mon-compte',
+  }) %>
 
-<div class="profile-card">
-  <% if (player.photo_filename) { %>
-    <img class="profile-photo" src="/media/joueur-photo/<%= player.id %>" alt="Photo de <%= player.prenom %>" />
-  <% } else { %>
-    <div class="profile-photo profile-photo-empty">Photo</div>
-  <% } %>
-  <div class="profile-info">
-    <% if (player.club_nom) { %>
-      <p class="profile-club">
-        <% if (player.club_logo_filename) { %>
-          <img class="club-logo-sm" src="/media/club-logo/<%= player.id %>" alt="Logo <%= player.club_nom %>" />
-        <% } %>
-        <strong><%= player.club_nom %></strong><% if (player.club_pays) { %> · <%= player.club_pays %><% } %>
-      </p>
-    <% } %>
-    <p class="card-meta">
-      <% if (player.taille_cm) { %><span class="badge">Taille : <span data-countup="<%= player.taille_cm %>" data-suffix=" cm">0 cm</span></span> <% } %>
-      <span class="badge">Matchs : <span data-countup="<%= player.nb_matchs || 0 %>">0</span></span>
-    </p>
-  </div>
-</div>
-
-<% if (reports.length === 0) { %>
-  <div class="empty-state">
-    <p>Aucun rapport publié pour le moment. Reviens un peu plus tard.</p>
-  </div>
-<% } else { %>
-  <% reports.forEach(r => { %>
-    <a class="card-link" href="/joueur/rapports/<%= r.id %>">
-      <p class="card-title"><%= r.titre %></p>
-      <p class="card-meta">
-        <% if (r.adversaire) { %>vs <%= r.adversaire %> · <% } %>
-        <%= r.date_match || 'date non renseignée' %>
-        <% if (r.resultat) { %> · <%= r.resultat %><% } %>
-      </p>
-    </a>
-  <% }) %>
-<% } %>
-
-<script src="/js/stats-animate.js" defer></script>
-
-<%- include('../partials/footer') %>
+  <script src="/js/apercu-joueur.js" defer></script>
+</body>
+</html>

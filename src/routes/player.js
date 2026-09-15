@@ -3,6 +3,7 @@ const bcrypt = require("bcryptjs");
 const { db } = require("../db");
 const { requirePlayer } = require("../middleware/auth");
 const { getEmbeddableVideo, enrichStatsForDisplay } = require("../utils");
+const { buildEspaceJoueurData } = require("../lib/espace-joueur");
 
 const router = express.Router();
 router.use(requirePlayer);
@@ -19,15 +20,15 @@ router.use((req, res, next) => {
 });
 
 router.get("/", (req, res) => {
+  // Sécurité : le joueur connecté est déterminé uniquement par la session
+  // (req.session.playerId), jamais par un paramètre d'URL — un joueur ne
+  // peut donc jamais voir l'espace d'un autre joueur.
   const player = db.prepare("SELECT * FROM players WHERE id = ?").get(req.session.playerId);
   if (!player || !player.actif) {
     req.session.destroy(() => res.redirect("/joueur/login"));
     return;
   }
-  const reports = db
-    .prepare("SELECT * FROM reports WHERE player_id = ? ORDER BY date_match DESC, created_at DESC")
-    .all(player.id);
-  res.render("joueur/dashboard", { player, reports });
+  res.render("joueur/dashboard", buildEspaceJoueurData(player));
 });
 
 router.get("/rapports/:id", (req, res) => {

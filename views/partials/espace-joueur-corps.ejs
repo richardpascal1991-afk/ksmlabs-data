@@ -1,0 +1,365 @@
+<%
+/*
+  Corps partagé du nouvel espace joueur (les 5 onglets : Profil, Matchs,
+  Analyses, Data, Progression).
+
+  Utilisé à la fois par :
+  - l'aperçu admin (views/admin/apercu-espace-joueur.ejs)
+  - la vraie page joueur (views/joueur/dashboard.ejs)
+
+  Variables attendues (toutes fournies par src/lib/espace-joueur.js sauf
+  les 3 dernières, propres à l'affichage) :
+    player, age, dateNaissanceFr, dernierRapportFr, matchs, analyses,
+    radar, evolution, comparaison, objectifsActuels, objectifsAtteints,
+    pointsForts, axesAmelioration, planTravail,
+    rapportBaseUrl   -> "/admin/rapports/" ou "/joueur/rapports/"
+    rapportTarget    -> "_blank" (aperçu admin) ou "" (vrai joueur)
+    settingsHref      -> lien vers "Mon compte" (null = pas d'icône réglages)
+*/
+%>
+
+  <div class="p-header">
+    <div class="p-header-top">
+      <% if (typeof settingsHref !== "undefined" && settingsHref) { %>
+        <a class="p-settings" href="<%= settingsHref %>" aria-label="Réglages du compte">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1.04 1.56V21a2 2 0 1 1-4 0v-.09A1.7 1.7 0 0 0 9 19.36a1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.64 15a1.7 1.7 0 0 0-1.56-1.04H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.64 9a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.64a1.7 1.7 0 0 0 1.04-1.56V3a2 2 0 1 1 4 0v.09A1.7 1.7 0 0 0 15 4.64a1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.36 9c.1.36.32.66.64.87.32.2.7.3 1.04.24H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.51 1.09z"/></svg>
+        </a>
+      <% } %>
+      <div class="p-notif">&#128276;<span class="dot"></span></div>
+    </div>
+    <div class="p-identity">
+      <% if (player.photo_filename) { %>
+        <img class="p-photo" src="/media/joueur-photo/<%= player.id %>" alt="" />
+      <% } else { %>
+        <div class="p-photo"><%= (player.prenom[0] || '') %><%= (player.nom[0] || '') %></div>
+      <% } %>
+      <div>
+        <p class="p-name"><%= player.prenom %> <%= player.nom %></p>
+        <div class="p-club">
+          <% if (player.club_logo_filename) { %>
+            <img class="p-club-logo" src="/media/club-logo/<%= player.id %>" alt="" />
+          <% } else { %>
+            <span class="p-club-logo">?</span>
+          <% } %>
+          <span><%= player.club_nom || 'Club non renseigné' %></span>
+        </div>
+      </div>
+    </div>
+    <div class="p-meta-row">
+      <span class="p-pill"><%= player.poste || 'Poste non renseigné' %></span>
+      <span class="p-pill"><%= player.numero ? '#' + player.numero : 'Numéro non renseigné' %></span>
+      <span class="p-pill"><%= player.nationalite || 'Nationalité non renseignée' %></span>
+    </div>
+  </div>
+
+  <div class="p-tabs">
+    <div class="p-tab active" data-tab="profil">Profil</div>
+    <div class="p-tab" data-tab="matchs">Matchs</div>
+    <div class="p-tab" data-tab="analyses">Analyses</div>
+    <div class="p-tab" data-tab="data">Data</div>
+    <div class="p-tab" data-tab="progression">Progression</div>
+  </div>
+
+  <div class="p-content">
+
+    <div class="tab-panel active" id="panel-profil">
+      <div class="p-card">
+        <p class="p-card-title">Informations <span class="real-flag">données réelles</span></p>
+        <div class="p-grid">
+          <div class="p-stat">
+            <div class="p-stat-value"><%= player.taille_cm ? player.taille_cm + ' cm' : '—' %></div>
+            <div class="p-stat-label">Taille</div>
+          </div>
+          <div class="p-stat">
+            <div class="p-stat-value"><%= age !== null ? age + ' ans' : '—' %></div>
+            <div class="p-stat-label"><%= dateNaissanceFr || 'Date de naissance non renseignée' %></div>
+          </div>
+          <div class="p-stat">
+            <div class="p-stat-value"><%= player.nationalite || '—' %></div>
+            <div class="p-stat-label">Nationalité</div>
+          </div>
+          <div class="p-stat">
+            <div class="p-stat-value"><%= player.numero ? '#' + player.numero : '—' %></div>
+            <div class="p-stat-label">Numéro</div>
+          </div>
+          <div class="p-stat">
+            <div class="p-stat-value"><%= player.poste || '—' %></div>
+            <div class="p-stat-label">Poste</div>
+          </div>
+          <div class="p-stat">
+            <div class="p-stat-value"><%= player.pied_fort || '—' %></div>
+            <div class="p-stat-label">Pied fort</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="p-card">
+        <p class="p-card-title">Suivi KSM LABS <span class="example-flag">partiellement réel</span></p>
+        <div class="p-suivi-list">
+          <div class="p-suivi-row"><span class="label">Matchs analysés</span><span class="value"><%= player.nb_matchs || 0 %></span></div>
+          <div class="p-suivi-row"><span class="label">Minutes analysées</span><span class="value neutral">— (exemple, pas encore suivi)</span></div>
+          <div class="p-suivi-row"><span class="label">Note moyenne interne</span><span class="value neutral">— (exemple, pas encore suivi)</span></div>
+          <div class="p-suivi-row"><span class="label">Vidéos correctives</span><span class="value neutral">— (exemple, pas encore suivi)</span></div>
+          <div class="p-suivi-row"><span class="label">Objectifs atteints</span><span class="value neutral">— (exemple, pas encore suivi)</span></div>
+          <div class="p-suivi-row"><span class="label">Dernière analyse</span><span class="value neutral"><%= dernierRapportFr || 'Aucune pour l\'instant' %></span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tab-panel" id="panel-matchs">
+      <% if (matchs.length === 0) { %>
+        <p class="p-placeholder">Aucun rapport publié pour ce joueur pour l'instant.</p>
+      <% } else { %>
+        <% matchs.forEach(function (m) { %>
+          <div class="p-card match-card">
+            <div class="match-top">
+              <span><%= m.competition || 'Compétition non renseignée' %></span>
+              <span><%= m.dateFr %></span>
+            </div>
+            <div class="match-teams">
+              <div class="match-team">
+                <% if (player.club_logo_filename) { %>
+                  <img class="team-logo" src="/media/club-logo/<%= player.id %>" alt="" />
+                <% } else { %>
+                  <div class="team-logo"><%= (player.club_nom || '?').slice(0, 3).toUpperCase() %></div>
+                <% } %>
+                <span class="team-name"><%= player.club_nom || 'Ton club' %></span>
+              </div>
+              <div class="match-score"><%= m.resultat || 'Score non renseigné' %></div>
+              <div class="match-team">
+                <div class="team-logo"><%= m.adversaire.slice(0, 3).toUpperCase() %></div>
+                <span class="team-name"><%= m.adversaire %></span>
+              </div>
+            </div>
+            <div class="match-meta">
+              <span><% if (m.minutesJouees) { %><b><%= m.minutesJouees %>'</b> jouées<% } else { %>Minutes non renseignées<% } %></span>
+            </div>
+            <div class="match-footer">
+              <span class="status-badge status-ready">Rapport disponible</span>
+              <a class="btn-mini" href="<%= rapportBaseUrl %><%= m.id %>"<% if (rapportTarget) { %> target="<%= rapportTarget %>" rel="noopener"<% } %>>Voir l'analyse</a>
+            </div>
+          </div>
+        <% }) %>
+      <% } %>
+    </div>
+    <div class="tab-panel" id="panel-analyses">
+      <% if (analyses.length === 0) { %>
+        <p class="p-placeholder">Aucune vidéo corrective ajoutée pour ce joueur pour l'instant.</p>
+      <% } else { %>
+        <% analyses.forEach(function (a) { %>
+          <div class="p-card analyse-card">
+            <div class="analyse-top">
+              <span class="theme-badge"><%= a.theme %></span>
+              <span class="status-badge <%= a.nouveau ? 'status-nouveau' : 'status-vu' %>"><%= a.nouveau ? 'Nouveau' : 'Vu' %></span>
+            </div>
+            <p class="analyse-titre"><%= a.titre %></p>
+            <p class="analyse-meta">
+              <% if (a.matchLabel) { %><%= a.matchLabel %> · <% } %>
+              <% if (a.duree) { %><%= a.duree %> · <% } %>
+              <%= a.createdFr %>
+            </p>
+
+            <% if (a.videoSrc) { %>
+              <video controls class="analyse-video" src="<%= a.videoSrc %>"></video>
+            <% } else if (a.embedUrl) { %>
+              <div class="analyse-video-embed">
+                <iframe src="<%= a.embedUrl %>" title="<%= a.titre %>" frameborder="0" allowfullscreen></iframe>
+              </div>
+            <% } else if (a.lienExterne) { %>
+              <a class="btn-mini" href="<%= a.lienExterne %>" target="_blank" rel="noopener">Voir la vidéo ↗</a>
+            <% } else { %>
+              <p class="card-meta" style="margin:10px 0;">Vidéo non disponible pour l'instant.</p>
+            <% } %>
+
+            <% if (a.commentaire) { %>
+              <p class="analyse-commentaire"><%= a.commentaire %></p>
+            <% } %>
+
+            <div class="analyse-footer">
+              <button type="button" class="btn-mini btn-mini-ghost" disabled>J'ai compris (exemple)</button>
+            </div>
+          </div>
+        <% }) %>
+      <% } %>
+    </div>
+    <div class="tab-panel" id="panel-data">
+      <div class="p-card">
+        <p class="p-card-title">
+          Radar de compétences
+          <% if (radar) { %><span class="real-flag">données réelles</span><% } else { %><span class="example-flag">pas encore disponible</span><% } %>
+        </p>
+        <% if (radar) { %>
+          <div class="radar-wrap">
+            <svg width="260" height="210" viewBox="-40 -10 300 220">
+              <% radar.geometry.grid.forEach(function (ring) { %>
+                <polygon points="<%= ring %>" fill="none" stroke="#262b3a" stroke-width="1" />
+              <% }) %>
+              <% radar.geometry.axisLines.forEach(function (l) { %>
+                <line x1="<%= l.x1 %>" y1="<%= l.y1 %>" x2="<%= l.x2 %>" y2="<%= l.y2 %>" stroke="#262b3a" />
+              <% }) %>
+              <polygon points="<%= radar.geometry.dataPoints %>" fill="rgba(34,211,168,0.22)" stroke="#22d3a8" stroke-width="2" />
+              <% radar.geometry.labels.forEach(function (l) { %>
+                <text x="<%= l.x %>" y="<%= l.y %>" fill="#9aa0b4" font-size="10" text-anchor="<%= l.anchor %>" font-family="Inter, sans-serif"><%= l.text %></text>
+              <% }) %>
+            </svg>
+          </div>
+          <p class="card-meta" style="text-align:center;">Match noté le <%= radar.dateFr %></p>
+        <% } else { %>
+          <p class="p-placeholder">Note les 6 compétences sur un rapport de match (formulaire de rapport) pour activer le radar.</p>
+        <% } %>
+      </div>
+
+      <div class="p-card">
+        <p class="p-card-title">
+          Évolution de la note
+          <% if (evolution) { %><span class="real-flag">données réelles</span><% } else { %><span class="example-flag">pas encore disponible</span><% } %>
+        </p>
+        <% if (evolution) { %>
+          <svg class="line-chart" viewBox="0 0 300 90" preserveAspectRatio="none">
+            <polyline points="<%= evolution.polylinePoints %>" fill="none" stroke="#22d3a8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+          <div class="p-suivi-row" style="margin-top:10px;">
+            <span class="label"><%= evolution.count %> derniers matchs notés</span>
+            <span class="value"><%= evolution.premiereFr %> → <%= evolution.derniereFr %></span>
+          </div>
+        <% } else { %>
+          <p class="p-placeholder">Renseigne la note globale sur au moins 2 matchs pour activer la courbe.</p>
+        <% } %>
+      </div>
+
+      <div class="p-card">
+        <p class="p-card-title">
+          Comparaison avec la moyenne de saison
+          <% if (comparaison) { %><span class="real-flag">données réelles</span><% } else { %><span class="example-flag">pas encore disponible</span><% } %>
+        </p>
+        <% if (comparaison) { %>
+          <div class="trend-list">
+            <% comparaison.forEach(function (c) { %>
+              <div class="trend-row">
+                <span class="label"><%= c.label %></span>
+                <span class="trend-val trend-<%= c.tendance %>">
+                  <%= c.tendance === 'up' ? '▲' : (c.tendance === 'down' ? '▼' : '▬') %>
+                  <%= c.latestFr %>/10 (moyenne saison <%= c.moyenneFr %>/10)
+                </span>
+              </div>
+            <% }) %>
+          </div>
+        <% } else { %>
+          <p class="p-placeholder">Note au moins 2 matchs sur un même axe pour activer la comparaison.</p>
+        <% } %>
+      </div>
+    </div>
+    <div class="tab-panel" id="panel-progression">
+      <div class="p-card">
+        <p class="p-card-title">
+          Objectifs actuels
+          <% if (objectifsActuels.length) { %><span class="real-flag">données réelles</span><% } else { %><span class="example-flag">pas encore disponible</span><% } %>
+        </p>
+        <% if (objectifsActuels.length === 0) { %>
+          <p class="p-placeholder">Aucun objectif en cours pour l'instant.</p>
+        <% } else { %>
+          <% objectifsActuels.forEach(function (o) { %>
+            <div class="goal-row">
+              <div class="goal-head"><span><%= o.titre %></span><span class="pct"><%= o.progression_pct %>%</span></div>
+              <div class="goal-track"><div class="goal-fill" style="width:<%= o.progression_pct %>%;"></div></div>
+            </div>
+          <% }) %>
+        <% } %>
+      </div>
+
+      <% if (objectifsAtteints.length > 0) { %>
+        <div class="p-card">
+          <p class="p-card-title">Objectifs atteints <span class="real-flag">données réelles</span></p>
+          <div class="tag-list">
+            <% objectifsAtteints.forEach(function (o) { %>
+              <span class="tag-good">✓ <%= o.titre %></span>
+            <% }) %>
+          </div>
+        </div>
+      <% } %>
+
+      <div class="p-card">
+        <p class="p-card-title">
+          Points forts
+          <% if (pointsForts.length) { %><span class="real-flag">données réelles</span><% } else { %><span class="example-flag">pas encore disponible</span><% } %>
+        </p>
+        <% if (pointsForts.length === 0) { %>
+          <p class="p-placeholder">Pas encore renseigné.</p>
+        <% } else { %>
+          <div class="tag-list">
+            <% pointsForts.forEach(function (t) { %><span class="tag-good"><%= t %></span><% }) %>
+          </div>
+        <% } %>
+      </div>
+
+      <div class="p-card">
+        <p class="p-card-title">
+          Axes d'amélioration
+          <% if (axesAmelioration.length) { %><span class="real-flag">données réelles</span><% } else { %><span class="example-flag">pas encore disponible</span><% } %>
+        </p>
+        <% if (axesAmelioration.length === 0) { %>
+          <p class="p-placeholder">Pas encore renseigné.</p>
+        <% } else { %>
+          <div class="tag-list">
+            <% axesAmelioration.forEach(function (t) { %><span class="tag-work"><%= t %></span><% }) %>
+          </div>
+        <% } %>
+      </div>
+
+      <div class="p-card">
+        <p class="p-card-title">
+          Plan de travail
+          <% if (planTravail.length) { %><span class="real-flag">données réelles</span><% } else { %><span class="example-flag">pas encore disponible</span><% } %>
+        </p>
+        <% if (planTravail.length === 0) { %>
+          <p class="p-placeholder">Pas encore renseigné.</p>
+        <% } else { %>
+          <ul class="plan-list">
+            <% planTravail.forEach(function (t) { %><li><%= t %></li><% }) %>
+          </ul>
+        <% } %>
+      </div>
+
+      <div class="p-card">
+        <p class="p-card-title">
+          Évolution sur la saison
+          <% if (evolution) { %><span class="real-flag">données réelles</span><% } else { %><span class="example-flag">pas encore disponible</span><% } %>
+        </p>
+        <% if (evolution) { %>
+          <svg class="line-chart" viewBox="0 0 300 90" preserveAspectRatio="none">
+            <polyline points="<%= evolution.polylinePoints %>" fill="none" stroke="#22d3a8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+          <div class="p-suivi-row" style="margin-top:10px;">
+            <span class="label">Note globale (<%= evolution.count %> derniers matchs notés)</span>
+            <span class="value"><%= evolution.premiereFr %> → <%= evolution.derniereFr %></span>
+          </div>
+        <% } else { %>
+          <p class="p-placeholder">Renseigne la note globale sur au moins 2 matchs (onglet Data) pour l'activer ici aussi.</p>
+        <% } %>
+      </div>
+    </div>
+
+  </div>
+
+  <nav class="b-nav">
+    <a class="b-link active" data-target="profil">
+      <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v9a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1v-9"/><path d="M9.5 20v-6h5v6"/></svg></span>
+      Accueil
+    </a>
+    <a class="b-link" data-target="matchs">
+      <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16"/><path d="M8 3v4M16 3v4"/></svg></span>
+      Matchs
+    </a>
+    <a class="b-link" data-target="analyses">
+      <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M10 8.5 16 12l-6 3.5z" fill="currentColor" stroke="none"/></svg></span>
+      Vidéos
+    </a>
+    <a class="b-link" data-target="progression">
+      <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16l6-6 4 4 6-8"/><path d="M15 6h5v5"/></svg></span>
+      Progression
+    </a>
+    <a class="b-link" data-target="profil">
+      <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6"/></svg></span>
+      Profil
+    </a>
+  </nav>

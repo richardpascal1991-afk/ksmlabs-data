@@ -40,8 +40,8 @@ body {
 .mock-banner a { color: #fcd34d; }
 
 .p-header { padding: 18px 18px 0; animation: fadeInUp 0.45s ease both; }
-.p-header-top { display: flex; justify-content: flex-end; margin-bottom: 8px; }
-.p-notif {
+.p-header-top { display: flex; justify-content: flex-end; align-items: center; gap: 10px; margin-bottom: 8px; }
+.p-notif, .p-settings {
   position: relative;
   width: 34px; height: 34px;
   border-radius: 50%;
@@ -50,6 +50,8 @@ body {
   display: flex; align-items: center; justify-content: center;
   color: var(--text-dim); font-size: 15px;
 }
+.p-settings svg { width: 18px; height: 18px; }
+.p-settings:hover { color: var(--text); border-color: var(--accent); }
 .p-notif .dot {
   position: absolute; top: 6px; right: 7px;
   width: 8px; height: 8px; border-radius: 50%;
