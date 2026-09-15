@@ -32,6 +32,11 @@
           <form action="/logout" method="post" class="inline-form">
             <button type="submit" class="link-button">Déconnexion</button>
           </form>
+        <% } else if (isCollaborateur) { %>
+          <a href="/collaborateur/joueurs">Joueurs</a>
+          <form action="/logout" method="post" class="inline-form">
+            <button type="submit" class="link-button">Déconnexion</button>
+          </form>
         <% } %>
       </nav>
     </div>

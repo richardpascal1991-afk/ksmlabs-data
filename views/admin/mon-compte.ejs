@@ -22,4 +22,36 @@
   <button type="submit" class="btn">Mettre à jour</button>
 </form>
 
+<h1 style="margin-top:40px;">Accès collaborateurs</h1>
+<p class="subtitle">
+  Un seul identifiant et un seul code, à communiquer à toute ton équipe. Ils pourront consulter
+  toutes les fiches joueurs (informations, rapports, vidéos correctives, objectifs) sans pouvoir
+  rien modifier.
+</p>
+
+<% if (collabIdentifiant) { %>
+  <p class="card-meta">Identifiant actuel : <strong><%= collabIdentifiant %></strong></p>
+<% } else { %>
+  <p class="card-meta">Aucun accès collaborateur configuré pour l'instant.</p>
+<% } %>
+
+<% if (collabError) { %><div class="alert alert-error"><%= collabError %></div><% } %>
+<% if (collabSuccess) { %><div class="alert alert-success"><%= collabSuccess %></div><% } %>
+
+<form method="post" action="/admin/collaborateur-acces">
+  <div class="form-group">
+    <label for="collab_identifiant">Identifiant</label>
+    <input type="text" id="collab_identifiant" name="collab_identifiant" autocomplete="off" required
+           value="<%= collabIdentifiant || '' %>" placeholder="ex : staff" />
+  </div>
+  <div class="form-group">
+    <label for="collab_code">Nouveau code d'accès</label>
+    <input type="text" id="collab_code" name="collab_code" autocomplete="off" required minlength="4"
+           placeholder="ex : ksm2026" />
+  </div>
+  <button type="submit" class="btn btn-secondary">
+    <%= collabIdentifiant ? 'Mettre à jour l\'accès collaborateur' : 'Activer l\'accès collaborateur' %>
+  </button>
+</form>
+
 <%- include('../partials/footer') %>

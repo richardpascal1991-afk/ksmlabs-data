@@ -10,6 +10,11 @@ function requirePlayer(req, res, next) {
   return res.redirect("/joueur/login");
 }
 
+function requireCollaborateur(req, res, next) {
+  if (req.session && req.session.isCollaborateur) return next();
+  return res.redirect("/collaborateur/login");
+}
+
 // Limite les tentatives de connexion pour freiner le bruteforce sur les
 // codes joueurs / mot de passe admin.
 const loginLimiter = rateLimit({
@@ -20,4 +25,4 @@ const loginLimiter = rateLimit({
   message: "Trop de tentatives de connexion. Réessaie dans quelques minutes.",
 });
 
-module.exports = { requireAdmin, requirePlayer, loginLimiter };
+module.exports = { requireAdmin, requirePlayer, requireCollaborateur, loginLimiter };

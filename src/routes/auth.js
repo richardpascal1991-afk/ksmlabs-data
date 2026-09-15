@@ -58,6 +58,32 @@ router.post("/joueur/login", loginLimiter, (req, res) => {
   });
 });
 
+// ---------- Connexion COLLABORATEUR (lecture seule, identifiant partagé) ----------
+
+router.get("/collaborateur/login", (req, res) => {
+  if (req.session.isCollaborateur) return res.redirect("/collaborateur/joueurs");
+  res.render("collaborateur/login", { error: null });
+});
+
+router.post("/collaborateur/login", loginLimiter, (req, res) => {
+  const { identifiant, code } = req.body;
+  const acces = db.prepare("SELECT * FROM collaborateur_acces WHERE id = 1").get();
+
+  const identifiantOk =
+    acces && (identifiant || "").trim().toLowerCase() === acces.identifiant.toLowerCase();
+  if (!acces || !identifiantOk || !bcrypt.compareSync(code || "", acces.code_hash)) {
+    return res.status(401).render("collaborateur/login", {
+      error: "Identifiant ou code incorrect.",
+    });
+  }
+
+  req.session.regenerate((err) => {
+    if (err) return res.status(500).render("500");
+    req.session.isCollaborateur = true;
+    res.redirect("/collaborateur/joueurs");
+  });
+});
+
 // ---------- Déconnexion (commune) ----------
 
 router.post("/logout", (req, res) => {

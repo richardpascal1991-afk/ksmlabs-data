@@ -109,6 +109,18 @@ CREATE TABLE IF NOT EXISTS objectifs (
   updated_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
+-- Accès collaborateur (agence) : lecture seule sur toutes les fiches joueurs,
+-- sans jamais pouvoir rien modifier. Un seul identifiant/code partagé, choisi
+-- par l'admin depuis "Mon compte" — table entièrement nouvelle et
+-- indépendante, aucune table existante n'est modifiée. Une seule ligne
+-- (id = 1) : tant qu'elle n'existe pas, aucun accès collaborateur n'est actif.
+CREATE TABLE IF NOT EXISTS collaborateur_acces (
+  id INTEGER PRIMARY KEY CHECK (id = 1),
+  identifiant TEXT NOT NULL,
+  code_hash TEXT NOT NULL,
+  updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
 CREATE INDEX IF NOT EXISTS idx_reports_player ON reports(player_id);
 CREATE INDEX IF NOT EXISTS idx_videos_report ON report_videos(report_id);
 CREATE INDEX IF NOT EXISTS idx_images_report ON report_images(report_id);

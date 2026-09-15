@@ -1,20 +1,27 @@
 <%- include('../partials/header', { title: 'Joueurs' }) %>
 
+<%
+  const ro = typeof readOnly !== 'undefined' && readOnly;
+  const base = typeof baseUrl !== 'undefined' ? baseUrl : '/admin/joueurs';
+%>
+
 <h1>Joueurs</h1>
 <p class="subtitle"><%= players.length %> joueur(s)</p>
 
+<% if (!ro) { %>
 <div class="actions" style="margin-bottom:20px;">
   <a class="btn" href="/admin/joueurs/nouveau">+ Ajouter un joueur</a>
 </div>
+<% } %>
 
 <% if (players.length === 0) { %>
   <div class="empty-state">
     <p>Aucun joueur enregistré pour l'instant.</p>
-    <a class="btn btn-small" href="/admin/joueurs/nouveau">+ Ajouter le premier joueur</a>
+    <% if (!ro) { %><a class="btn btn-small" href="/admin/joueurs/nouveau">+ Ajouter le premier joueur</a><% } %>
   </div>
 <% } else { %>
   <% players.forEach(p => { %>
-    <a class="card-link player-list-link" href="/admin/joueurs/<%= p.id %>">
+    <a class="card-link player-list-link" href="<%= base %>/<%= p.id %>">
       <% if (p.photo_filename) { %>
         <img class="player-list-photo" src="/media/joueur-photo/<%= p.id %>" alt="" />
       <% } else { %>

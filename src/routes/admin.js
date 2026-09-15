@@ -15,6 +15,8 @@ const {
   enrichStatsForDisplay,
 } = require("../utils");
 const { buildEspaceJoueurData } = require("../lib/espace-joueur");
+const { listPlayersAvecDernierRapport, getFicheJoueur } = require("../lib/joueurs");
+const { buildRapportLectureSeule } = require("../lib/rapport-lecture-seule");
 
 const router = express.Router();
 router.use(requireAdmin);
@@ -147,20 +149,7 @@ router.get("/", (req, res) => {
 // ---------- Gestion des joueurs ----------
 
 router.get("/joueurs", (req, res) => {
-  // Lecture seule : on ajoute juste, pour chaque joueur, la date de son
-  // dernier rapport publié (aucune donnée n'est modifiée ni ajoutée en base).
-  const rows = db
-    .prepare(
-      `SELECT players.*,
-         (SELECT MAX(reports.created_at) FROM reports WHERE reports.player_id = players.id) AS dernier_rapport_le
-       FROM players ORDER BY nom, prenom`
-    )
-    .all();
-  const players = rows.map((p) => ({
-    ...p,
-    dernier_rapport_fr: p.dernier_rapport_le ? formatDateFr(p.dernier_rapport_le) : null,
-  }));
-  res.render("admin/joueurs", { players });
+  res.render("admin/joueurs", { players: listPlayersAvecDernierRapport() });
 });
 
 router.get("/joueurs/nouveau", (req, res) => {
@@ -242,18 +231,9 @@ router.post("/joueurs", uploadPlayerFiles, (req, res) => {
 });
 
 router.get("/joueurs/:id", (req, res) => {
-  const player = db.prepare("SELECT * FROM players WHERE id = ?").get(req.params.id);
-  if (!player) return res.status(404).render("404");
-  const reports = db
-    .prepare("SELECT * FROM reports WHERE player_id = ? ORDER BY date_match DESC, created_at DESC")
-    .all(player.id);
-  const videosCorrectives = db
-    .prepare("SELECT * FROM videos_correctives WHERE player_id = ? ORDER BY created_at DESC")
-    .all(player.id);
-  const objectifs = db
-    .prepare("SELECT * FROM objectifs WHERE player_id = ? ORDER BY atteint ASC, created_at DESC")
-    .all(player.id);
-  res.render("admin/joueur-detail", { player, reports, videosCorrectives, objectifs, error: null });
+  const fiche = getFicheJoueur(req.params.id);
+  if (!fiche) return res.status(404).render("404");
+  res.render("admin/joueur-detail", { ...fiche, error: null });
 });
 
 router.post("/joueurs/:id", uploadPlayerFiles, (req, res) => {
@@ -362,26 +342,12 @@ router.get("/joueurs/:id/apercu-espace-joueur", (req, res) => {
 // d'édition — pour que l'aperçu reste un miroir fidèle jusqu'au bout.
 // Pour modifier un rapport, l'agence passe par la fiche du joueur comme avant.
 router.get("/rapports/:id/lecture-seule", (req, res) => {
-  const report = db.prepare("SELECT * FROM reports WHERE id = ?").get(req.params.id);
-  if (!report) return res.status(404).render("404");
-  const player = db.prepare("SELECT * FROM players WHERE id = ?").get(report.player_id);
-
-  const videos = db
-    .prepare("SELECT * FROM report_videos WHERE report_id = ? ORDER BY ordre")
-    .all(report.id)
-    .map((v) => ({ ...v, embedUrl: v.filename ? null : getEmbeddableVideo(v.url) }));
-  const images = db
-    .prepare("SELECT * FROM report_images WHERE report_id = ? ORDER BY ordre")
-    .all(report.id);
-  const stats = enrichStatsForDisplay(JSON.parse(report.stats_json || "[]"));
+  const data = buildRapportLectureSeule(req.params.id);
+  if (!data) return res.status(404).render("404");
 
   res.render("joueur/rapport-detail", {
-    player,
-    report,
-    videos,
-    images,
-    stats,
-    backHref: `/admin/joueurs/${player.id}/apercu-espace-joueur`,
+    ...data,
+    backHref: `/admin/joueurs/${data.player.id}/apercu-espace-joueur`,
     backLabel: "Retour à l'aperçu",
   });
 });
@@ -974,32 +940,101 @@ router.post("/rapports/:id/supprimer", (req, res) => {
 
 // ---------- Changer son propre mot de passe admin ----------
 
+function getCollabIdentifiant() {
+  const acces = db.prepare("SELECT identifiant FROM collaborateur_acces WHERE id = 1").get();
+  return acces ? acces.identifiant : null;
+}
+
 router.get("/mon-compte", (req, res) => {
-  res.render("admin/mon-compte", { error: null, success: null });
+  res.render("admin/mon-compte", {
+    error: null,
+    success: null,
+    collabError: null,
+    collabSuccess: null,
+    collabIdentifiant: getCollabIdentifiant(),
+  });
 });
 
 router.post("/mon-compte", (req, res) => {
   const { current_password, new_password, confirm_password } = req.body;
   const admin = db.prepare("SELECT * FROM admins WHERE id = ?").get(req.session.adminId);
+  const collabIdentifiant = getCollabIdentifiant();
 
   if (!bcrypt.compareSync(current_password || "", admin.password_hash)) {
-    return res.render("admin/mon-compte", { error: "Mot de passe actuel incorrect.", success: null });
+    return res.render("admin/mon-compte", {
+      error: "Mot de passe actuel incorrect.",
+      success: null,
+      collabError: null,
+      collabSuccess: null,
+      collabIdentifiant,
+    });
   }
   if (!new_password || new_password.length < 8) {
     return res.render("admin/mon-compte", {
       error: "Le nouveau mot de passe doit faire au moins 8 caractères.",
       success: null,
+      collabError: null,
+      collabSuccess: null,
+      collabIdentifiant,
     });
   }
   if (new_password !== confirm_password) {
-    return res.render("admin/mon-compte", { error: "Les deux mots de passe ne correspondent pas.", success: null });
+    return res.render("admin/mon-compte", {
+      error: "Les deux mots de passe ne correspondent pas.",
+      success: null,
+      collabError: null,
+      collabSuccess: null,
+      collabIdentifiant,
+    });
   }
 
   db.prepare("UPDATE admins SET password_hash = ? WHERE id = ?").run(
     bcrypt.hashSync(new_password, 10),
     admin.id
   );
-  res.render("admin/mon-compte", { error: null, success: "Mot de passe mis à jour." });
+  res.render("admin/mon-compte", {
+    error: null,
+    success: "Mot de passe mis à jour.",
+    collabError: null,
+    collabSuccess: null,
+    collabIdentifiant,
+  });
+});
+
+// ---------- Accès collaborateurs (lecture seule, identifiant partagé) ----------
+// Table indépendante (collaborateur_acces), une seule ligne : à chaque
+// enregistrement, l'identifiant/code précédent est entièrement remplacé.
+
+router.post("/collaborateur-acces", (req, res) => {
+  const { collab_identifiant, collab_code } = req.body;
+  const identifiant = (collab_identifiant || "").trim();
+  const code = collab_code || "";
+  const rendreErreur = (message) =>
+    res.render("admin/mon-compte", {
+      error: null,
+      success: null,
+      collabError: message,
+      collabSuccess: null,
+      collabIdentifiant: getCollabIdentifiant(),
+    });
+
+  if (!identifiant) return rendreErreur("L'identifiant collaborateur est obligatoire.");
+  if (!code || code.length < 4) return rendreErreur("Le code doit faire au moins 4 caractères.");
+
+  const codeHash = bcrypt.hashSync(code, 10);
+  db.prepare(
+    `INSERT INTO collaborateur_acces (id, identifiant, code_hash, updated_at)
+     VALUES (1, ?, ?, datetime('now'))
+     ON CONFLICT(id) DO UPDATE SET identifiant = excluded.identifiant, code_hash = excluded.code_hash, updated_at = excluded.updated_at`
+  ).run(identifiant, codeHash);
+
+  res.render("admin/mon-compte", {
+    error: null,
+    success: null,
+    collabError: null,
+    collabSuccess: "Accès collaborateur mis à jour. Communique le nouvel identifiant et le nouveau code à ton équipe.",
+    collabIdentifiant: identifiant,
+  });
 });
 
 module.exports = router;

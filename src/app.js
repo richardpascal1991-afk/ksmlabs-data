@@ -14,6 +14,7 @@ const authRoutes = require("./routes/auth");
 const adminRoutes = require("./routes/admin");
 const playerRoutes = require("./routes/player");
 const mediaRoutes = require("./routes/media");
+const collaborateurRoutes = require("./routes/collaborateur");
 
 const app = express();
 
@@ -58,18 +59,21 @@ app.use((req, res, next) => {
   res.locals.agencyName = process.env.AGENCY_NAME || "KSMLABS";
   res.locals.isAdmin = !!(req.session && req.session.adminId);
   res.locals.isPlayer = !!(req.session && req.session.playerId);
+  res.locals.isCollaborateur = !!(req.session && req.session.isCollaborateur);
   next();
 });
 
 app.get("/", (req, res) => {
   if (req.session.adminId) return res.redirect("/admin");
   if (req.session.playerId) return res.redirect("/joueur");
+  if (req.session.isCollaborateur) return res.redirect("/collaborateur");
   res.render("accueil");
 });
 
 app.use("/", authRoutes);
 app.use("/admin", adminRoutes);
 app.use("/joueur", playerRoutes);
+app.use("/collaborateur", collaborateurRoutes);
 app.use("/media", mediaRoutes);
 
 app.use((req, res) => {

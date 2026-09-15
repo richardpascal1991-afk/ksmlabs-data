@@ -1,5 +1,10 @@
 <%- include('../partials/header', { title: player.prenom + ' ' + player.nom }) %>
 
+<%
+  const ro = typeof readOnly !== 'undefined' && readOnly;
+  const rapportBase = ro ? '/collaborateur/rapports/' : '/admin/rapports/';
+%>
+
 <h1><%= player.prenom %> <%= player.nom %> <% if (!player.actif) { %><span class="badge badge-inactive">inactif</span><% } %></h1>
 <p class="subtitle">Identifiant de connexion : <strong><%= player.identifiant %></strong></p>
 
@@ -25,11 +30,32 @@
   </div>
 </div>
 
+<% if (!ro) { %>
 <div class="alert alert-info" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
   <span>Voir exactement ce que <%= player.prenom %> voit dans son espace, sans avoir à se connecter à sa place.</span>
   <a class="btn btn-small btn-secondary" href="/admin/joueurs/<%= player.id %>/apercu-espace-joueur" target="_blank" rel="noopener">Voir comme le joueur</a>
 </div>
+<% } %>
 
+<% if (ro) { %>
+<div class="card">
+  <h3 style="margin-top:0;">Informations</h3>
+  <p><strong>Poste :</strong> <%= player.poste || 'non renseigné' %></p>
+  <p><strong>Statut :</strong> <%= player.actif ? 'Actif' : 'Inactif' %></p>
+  <h3>Club</h3>
+  <p><strong>Club :</strong> <%= player.club_nom || 'non renseigné' %><% if (player.club_pays) { %> · <%= player.club_pays %><% } %></p>
+  <h3>Données</h3>
+  <p><strong>Taille :</strong> <%= player.taille_cm ? player.taille_cm + ' cm' : 'non renseignée' %></p>
+  <p><strong>Nombre de matchs :</strong> <%= player.nb_matchs || 0 %></p>
+  <p><strong>Numéro :</strong> <%= player.numero || 'non renseigné' %></p>
+  <p><strong>Date de naissance :</strong> <%= player.date_naissance || 'non renseignée' %></p>
+  <p><strong>Nationalité :</strong> <%= player.nationalite || 'non renseignée' %></p>
+  <p><strong>Pied fort :</strong> <%= player.pied_fort || 'non renseigné' %></p>
+  <% if (player.points_forts) { %><h3>Points forts</h3><p style="white-space:pre-wrap;"><%= player.points_forts %></p><% } %>
+  <% if (player.axes_amelioration) { %><h3>Axes d'amélioration</h3><p style="white-space:pre-wrap;"><%= player.axes_amelioration %></p><% } %>
+  <% if (player.plan_travail) { %><h3>Plan de travail</h3><p style="white-space:pre-wrap;"><%= player.plan_travail %></p><% } %>
+</div>
+<% } else { %>
 <div class="card">
   <h3 style="margin-top:0;">Informations</h3>
   <form method="post" action="/admin/joueurs/<%= player.id %>" enctype="multipart/form-data">
@@ -142,7 +168,9 @@
     <button type="submit" class="btn btn-secondary">Enregistrer</button>
   </form>
 </div>
+<% } %>
 
+<% if (!ro) { %>
 <div class="actions" style="margin-bottom:24px;">
   <form method="post" action="/admin/joueurs/<%= player.id %>/reinitialiser-code" class="inline-form">
     <button type="submit" class="btn btn-secondary">Régénérer le code d'accès</button>
@@ -152,20 +180,23 @@
     <button type="submit" class="btn btn-danger">Supprimer le joueur</button>
   </form>
 </div>
+<% } %>
 
 <h2>Rapports</h2>
+<% if (!ro) { %>
 <div class="actions" style="margin-bottom:16px;">
   <a class="btn" href="/admin/joueurs/<%= player.id %>/rapports/nouveau">+ Nouveau rapport</a>
 </div>
+<% } %>
 
 <% if (reports.length === 0) { %>
   <div class="empty-state">
     <p>Aucun rapport publié pour ce joueur.</p>
-    <a class="btn btn-small" href="/admin/joueurs/<%= player.id %>/rapports/nouveau">+ Publier le premier rapport</a>
+    <% if (!ro) { %><a class="btn btn-small" href="/admin/joueurs/<%= player.id %>/rapports/nouveau">+ Publier le premier rapport</a><% } %>
   </div>
 <% } else { %>
   <% reports.forEach(r => { %>
-    <a class="card-link" href="/admin/rapports/<%= r.id %>">
+    <a class="card-link" href="<%= rapportBase %><%= r.id %>">
       <p class="card-title"><%= r.titre %></p>
       <p class="card-meta">
         <% if (r.adversaire) { %>vs <%= r.adversaire %> · <% } %>
@@ -177,42 +208,62 @@
 <% } %>
 
 <h2 style="margin-top:32px;">Vidéos correctives <span class="card-meta">(bêta — onglet « Analyses »)</span></h2>
+<% if (!ro) { %>
 <div class="actions" style="margin-bottom:16px;">
   <a class="btn" href="/admin/joueurs/<%= player.id %>/videos-correctives/nouvelle">+ Nouvelle vidéo corrective</a>
 </div>
+<% } %>
 
 <% if (typeof videosCorrectives === 'undefined' || videosCorrectives.length === 0) { %>
   <div class="empty-state">
     <p>Aucune vidéo corrective pour ce joueur.</p>
-    <a class="btn btn-small" href="/admin/joueurs/<%= player.id %>/videos-correctives/nouvelle">+ Ajouter la première</a>
+    <% if (!ro) { %><a class="btn btn-small" href="/admin/joueurs/<%= player.id %>/videos-correctives/nouvelle">+ Ajouter la première</a><% } %>
   </div>
 <% } else { %>
   <% videosCorrectives.forEach(v => { %>
+    <% if (ro) { %>
+    <div class="card-link" style="cursor:default;">
+      <p class="card-title"><%= v.titre %></p>
+      <p class="card-meta">
+        <%= v.theme %><% if (v.duree) { %> · <%= v.duree %><% } %><% if (!v.filename && !v.url) { %> · pas encore de vidéo attachée<% } %>
+      </p>
+    </div>
+    <% } else { %>
     <a class="card-link" href="/admin/videos-correctives/<%= v.id %>">
       <p class="card-title"><%= v.titre %></p>
       <p class="card-meta">
         <%= v.theme %><% if (v.duree) { %> · <%= v.duree %><% } %><% if (!v.filename && !v.url) { %> · pas encore de vidéo attachée<% } %>
       </p>
     </a>
+    <% } %>
   <% }) %>
 <% } %>
 
 <h2 style="margin-top:32px;">Objectifs <span class="card-meta">(bêta — onglet « Progression »)</span></h2>
+<% if (!ro) { %>
 <div class="actions" style="margin-bottom:16px;">
   <a class="btn" href="/admin/joueurs/<%= player.id %>/objectifs/nouveau">+ Nouvel objectif</a>
 </div>
+<% } %>
 
 <% if (typeof objectifs === 'undefined' || objectifs.length === 0) { %>
   <div class="empty-state">
     <p>Aucun objectif défini pour ce joueur.</p>
-    <a class="btn btn-small" href="/admin/joueurs/<%= player.id %>/objectifs/nouveau">+ Ajouter le premier</a>
+    <% if (!ro) { %><a class="btn btn-small" href="/admin/joueurs/<%= player.id %>/objectifs/nouveau">+ Ajouter le premier</a><% } %>
   </div>
 <% } else { %>
   <% objectifs.forEach(o => { %>
+    <% if (ro) { %>
+    <div class="card-link" style="cursor:default;">
+      <p class="card-title"><%= o.titre %><% if (o.atteint) { %> <span class="badge badge-active">atteint</span><% } %></p>
+      <p class="card-meta">Progression : <%= o.progression_pct %>%</p>
+    </div>
+    <% } else { %>
     <a class="card-link" href="/admin/objectifs/<%= o.id %>">
       <p class="card-title"><%= o.titre %><% if (o.atteint) { %> <span class="badge badge-active">atteint</span><% } %></p>
       <p class="card-meta">Progression : <%= o.progression_pct %>%</p>
     </a>
+    <% } %>
   <% }) %>
 <% } %>
 
