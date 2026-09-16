@@ -6,6 +6,7 @@ const multer = require("multer");
 const bcrypt = require("bcryptjs");
 
 const { db, UPLOADS_DIR } = require("../db");
+const { getDiskSpace } = require("../lib/disk-space");
 const { requireAdmin } = require("../middleware/auth");
 const {
   generateAccessCode,
@@ -82,17 +83,32 @@ function humanizeUploadError(err) {
     return "Trop de fichiers envoyés en une fois.";
   if (err.message === "UNSUPPORTED_TYPE")
     return "Format de fichier non autorisé (images : PNG/JPG/WEBP/PDF — vidéos : MP4/MOV/WEBM).";
+  if (err.code === "ENOSPC")
+    return "Le serveur n'a plus assez d'espace de stockage pour enregistrer ce fichier. Contacte l'administrateur technique : il faut libérer ou augmenter l'espace disque avant de réessayer.";
+  if (
+    err.message === "Unexpected end of form" ||
+    err.code === "ECONNRESET" ||
+    err.code === "ECONNABORTED" ||
+    err.code === "EPIPE"
+  )
+    return "La connexion a été interrompue avant la fin de l'envoi. Vérifie ta connexion et réessaie.";
   return "Erreur lors de l'envoi des fichiers.";
 }
 
 // Enveloppes qui transforment une erreur multer en message lisible
-// (au lieu d'une page d'erreur 500 générique).
+// (au lieu d'une page d'erreur 500 générique). On journalise aussi l'erreur
+// d'origine (code technique) pour pouvoir diagnostiquer un futur incident
+// depuis les logs Railway, même si l'utilisateur ne voit qu'un message
+// simple.
 function uploadReportFiles(req, res, next) {
   upload.fields([
     { name: "images", maxCount: 10 },
     { name: "video_files", maxCount: 5 },
   ])(req, res, (err) => {
-    if (err) req.uploadError = humanizeUploadError(err);
+    if (err) {
+      console.error("Échec d'envoi de fichier (rapport) :", err.code || err.message, err);
+      req.uploadError = humanizeUploadError(err);
+    }
     if (!req.files) req.files = {};
     next();
   });
@@ -103,7 +119,10 @@ function uploadPlayerFiles(req, res, next) {
     { name: "photo", maxCount: 1 },
     { name: "club_logo", maxCount: 1 },
   ])(req, res, (err) => {
-    if (err) req.uploadError = humanizeUploadError(err);
+    if (err) {
+      console.error("Échec d'envoi de fichier (joueur) :", err.code || err.message, err);
+      req.uploadError = humanizeUploadError(err);
+    }
     if (!req.files) req.files = {};
     next();
   });
@@ -111,7 +130,10 @@ function uploadPlayerFiles(req, res, next) {
 
 function uploadCorrectiveVideo(req, res, next) {
   upload.fields([{ name: "video_corrective_file", maxCount: 1 }])(req, res, (err) => {
-    if (err) req.uploadError = humanizeUploadError(err);
+    if (err) {
+      console.error("Échec d'envoi de fichier (vidéo corrective) :", err.code || err.message, err);
+      req.uploadError = humanizeUploadError(err);
+    }
     if (!req.files) req.files = {};
     next();
   });
@@ -134,6 +156,7 @@ router.get("/", (req, res) => {
     .prepare("SELECT COUNT(*) AS n FROM reports WHERE strftime('%Y-%m', created_at) = strftime('%Y-%m', 'now')")
     .get().n;
   const videoCount = db.prepare("SELECT COUNT(*) AS n FROM report_videos").get().n;
+  const diskSpace = getDiskSpace(UPLOADS_DIR);
 
   res.render("admin/dashboard", {
     players,
@@ -143,6 +166,7 @@ router.get("/", (req, res) => {
     reportsThisMonth,
     videoCount,
     adminUsername: req.session.adminUsername,
+    diskSpace,
   });
 });
 

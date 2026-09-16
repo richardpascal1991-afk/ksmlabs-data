@@ -159,6 +159,17 @@ Fichiers modifiés : `public/css/style.css`, `views/admin/rapport-form.ejs`, `vi
 - Testé en profondeur avec de vrais fichiers vidéo : progression affichée en temps réel, redirection correcte une fois l'envoi terminé, vidéo bien enregistrée et visible sur la fiche du joueur, et non-régression des formulaires n'impliquant aucun fichier.
 - Toujours aucune route supprimée, aucune fonctionnalité retirée, aucune donnée existante modifiée.
 
+### Étape 12.1 — Diagnostic des échecs d'envoi de vidéo + indicateur de stockage
+
+Fichier ajouté : `src/lib/disk-space.js`.
+Fichiers modifiés : `src/routes/admin.js`, `views/admin/dashboard.ejs`.
+
+- **Correction suite à un signalement de l'agence** : un envoi de vidéo corrective a échoué en conditions réelles (fibre), une fois en s'arrêtant vers 50 % avec un message laissant penser à un problème de connexion, une fois en allant jusqu'à 100 % avant d'afficher "Erreur lors de l'envoi des fichiers." Ce message générique ne permettait pas de savoir ce qui s'était vraiment passé.
+- Le tableau de bord admin affiche désormais l'espace de stockage utilisé sur le serveur (ex : "12,3 Go utilisés sur 20 Go"), avec une alerte visible si le stockage est presque plein (≥ 90 %) — cause la plus probable d'un échec d'envoi de gros fichier vidéo qui n'a rien à voir avec la qualité de la connexion de l'utilisateur.
+- Les erreurs d'envoi affichent maintenant un message plus précis selon la cause réelle : stockage serveur plein, connexion interrompue en cours d'envoi, fichier trop volumineux, format non autorisé — au lieu d'un seul message générique dans tous les cas.
+- Chaque échec d'envoi est désormais journalisé côté serveur (code d'erreur technique) pour permettre un diagnostic rapide si le problème se reproduit.
+- Testé en local : indicateur de stockage affiché correctement sur le tableau de bord, envoi de vidéo toujours fonctionnel (non-régression), aucune route ni fonctionnalité existante modifiée.
+
 ## Version de référence (avant refonte)
 
 Point de sauvegarde correspondant à la version en ligne avant le début de la refonte (animations joueur, recadrage photo, tableau de bord avec statistiques). Commit local de sauvegarde : "backup avant refonte UI KSM LABS".

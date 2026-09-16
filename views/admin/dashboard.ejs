@@ -3,6 +3,15 @@
 <h1>Tableau de bord</h1>
 <p class="subtitle">Bienvenue <%= adminUsername %>.</p>
 
+<% if (diskSpace) { %>
+  <div class="alert <%= diskSpace.percentUsed >= 90 ? 'alert-error' : 'alert-info' %>" style="margin-bottom:20px;">
+    Stockage serveur : <%= diskSpace.usedGo %> Go utilisés sur <%= diskSpace.totalGo %> Go (<%= diskSpace.percentUsed %> % — <%= diskSpace.availGo %> Go restants).
+    <% if (diskSpace.percentUsed >= 90) { %>
+      Le stockage est presque plein — les envois de vidéos volumineuses risquent d'échouer tant que de l'espace n'est pas libéré ou ajouté.
+    <% } %>
+  </div>
+<% } %>
+
 <div class="stat-tiles">
   <div class="stat-tile">
     <span class="stat-tile-value" data-countup="<%= activePlayerCount %>">0</span>
