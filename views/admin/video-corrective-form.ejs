@@ -9,7 +9,8 @@
 
 <form method="post"
       action="<%= (typeof editing !== 'undefined' && editing) ? '/admin/videos-correctives/' + video.id : '/admin/joueurs/' + player.id + '/videos-correctives' %>"
-      enctype="multipart/form-data">
+      enctype="multipart/form-data" data-upload-progress
+      data-success-redirect="/admin/joueurs/<%= player.id %>">
 
   <div class="form-group">
     <label for="titre">Titre</label>
@@ -85,5 +86,7 @@
     <button type="submit" class="btn btn-danger btn-small">Supprimer cette vidéo</button>
   </form>
 <% } %>
+
+<script src="/js/upload-progress.js" defer></script>
 
 <%- include('../partials/footer') %>

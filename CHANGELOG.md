@@ -148,6 +148,17 @@ Fichiers modifiés : `src/routes/media.js`, `src/routes/collaborateur.js`, `view
 - Testé en profondeur : chargement des photos et logos côté collaborateur (avant/après correction), accès au nouvel aperçu avec données réelles (radar affiché correctement, notes visibles), aucun champ modifiable, aucun accès aux réglages, sécurité (visiteur non connecté toujours bloqué), et non-régression de l'aperçu admin existant.
 - Toujours aucune route supprimée, aucune fonctionnalité retirée, aucune donnée existante modifiée.
 
+### Étape 12 — Barre de progression lors du dépôt d'une vidéo
+
+Fichier ajouté : `public/js/upload-progress.js`.
+Fichiers modifiés : `public/css/style.css`, `views/admin/rapport-form.ejs`, `views/admin/video-corrective-form.ejs`.
+
+- **Correction demandée par l'agence** : en déposant une vidéo (rapport de match ou vidéo corrective), rien n'indiquait si l'envoi progressait ou était bloqué — surtout gênant avec des fichiers volumineux (jusqu'à 2 Go). Un écran de chargement apparaît désormais dès que le formulaire est envoyé : pourcentage en temps réel, taille envoyée sur la taille totale, et un message clair tant que l'envoi n'est pas terminé.
+- Si l'envoi échoue (connexion coupée en cours de route), un message d'erreur s'affiche et le bouton redevient utilisable pour réessayer — plutôt qu'une page qui semble figée indéfiniment.
+- Si aucun fichier n'est sélectionné (juste une modification de texte), le formulaire s'envoie normalement, sans écran de chargement inutile.
+- Testé en profondeur avec de vrais fichiers vidéo : progression affichée en temps réel, redirection correcte une fois l'envoi terminé, vidéo bien enregistrée et visible sur la fiche du joueur, et non-régression des formulaires n'impliquant aucun fichier.
+- Toujours aucune route supprimée, aucune fonctionnalité retirée, aucune donnée existante modifiée.
+
 ## Version de référence (avant refonte)
 
 Point de sauvegarde correspondant à la version en ligne avant le début de la refonte (animations joueur, recadrage photo, tableau de bord avec statistiques). Commit local de sauvegarde : "backup avant refonte UI KSM LABS".

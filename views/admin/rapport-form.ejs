@@ -9,7 +9,8 @@
 
 <form method="post"
       action="<%= (typeof editing !== 'undefined' && editing) ? '/admin/rapports/' + report.id : '/admin/joueurs/' + player.id + '/rapports' %>"
-      enctype="multipart/form-data">
+      enctype="multipart/form-data" data-upload-progress
+      data-success-redirect="/admin/joueurs/<%= player.id %>">
 
   <div class="form-group">
     <label for="titre">Titre du rapport</label>
@@ -187,5 +188,6 @@
 <% } %>
 
 <script src="/js/report-form.js" defer></script>
+<script src="/js/upload-progress.js" defer></script>
 
 <%- include('../partials/footer') %>
