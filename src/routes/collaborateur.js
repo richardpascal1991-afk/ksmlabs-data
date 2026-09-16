@@ -6,8 +6,10 @@
 
 const express = require("express");
 const { requireCollaborateur } = require("../middleware/auth");
+const { db } = require("../db");
 const { listPlayersAvecDernierRapport, getFicheJoueur } = require("../lib/joueurs");
 const { buildRapportLectureSeule } = require("../lib/rapport-lecture-seule");
+const { buildEspaceJoueurData } = require("../lib/espace-joueur");
 
 const router = express.Router();
 router.use(requireCollaborateur);
@@ -28,6 +30,16 @@ router.get("/joueurs/:id", (req, res) => {
     readOnly: true,
     baseUrl: "/collaborateur/joueurs",
   });
+});
+
+// Aperçu complet de l'espace joueur (diagrammes, notes match par match,
+// évolution, objectifs) — même contenu que l'aperçu admin "Voir comme le
+// joueur", en lecture seule, sans aucune icône réglages.
+router.get("/joueurs/:id/apercu", (req, res) => {
+  const player = db.prepare("SELECT * FROM players WHERE id = ?").get(req.params.id);
+  if (!player) return res.status(404).render("404");
+
+  res.render("collaborateur/apercu-espace-joueur", buildEspaceJoueurData(player));
 });
 
 // Rapport en lecture seule (strictement la même page que le joueur voit).

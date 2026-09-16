@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Aperçu — espace joueur — <%= player.prenom %> <%= player.nom %></title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/apercu-joueur.css" />
+</head>
+<body>
+
+  <div class="mock-banner">
+    Aperçu joueur — lecture seule, aucune information n'est modifiable ici. <a href="/collaborateur/joueurs/<%= player.id %>">← Retour à la fiche</a>
+  </div>
+
+  <%- include('../partials/espace-joueur-corps', {
+    player, age, dateNaissanceFr, dernierRapportFr, matchs, analyses,
+    radar, evolution, comparaison, objectifsActuels, objectifsAtteints,
+    pointsForts, axesAmelioration, planTravail,
+    rapportBaseUrl: '/collaborateur/rapports/',
+    rapportSuffix: '',
+    rapportTarget: '_blank',
+    settingsHref: null,
+  }) %>
+
+  <script src="/js/apercu-joueur.js" defer></script>
+</body>
+</html>

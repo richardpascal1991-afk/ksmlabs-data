@@ -138,6 +138,16 @@ Fichier modifié : `views/accueil.ejs`.
 - Petit ajustement demandé par l'agence : la page d'accueil du site (celle qui s'affiche quand personne n'est connecté) proposait seulement deux choix, "Espace joueur" et "Espace agence" — les collaborateurs n'avaient donc aucun moyen de trouver leur page de connexion par eux-mêmes, il fallait leur transmettre un lien direct. Un troisième bouton "Espace collaborateur" a été ajouté, menant directement à leur page de connexion. Toute l'équipe peut désormais simplement aller sur l'adresse principale du site et choisir son espace, comme les joueurs et l'agence.
 - Aucun changement de fonctionnement ailleurs, purement un lien ajouté sur la page d'accueil.
 
+### Étape 11.2 — Correction des photos + aperçu complet (diagrammes, notes) pour les collaborateurs
+
+Fichiers ajoutés : `views/collaborateur/apercu-espace-joueur.ejs`.
+Fichiers modifiés : `src/routes/media.js`, `src/routes/collaborateur.js`, `views/admin/joueur-detail.ejs`.
+
+- **Correction d'un bug signalé par l'agence** : les photos des joueurs et les logos de club ne s'affichaient pas pour les collaborateurs (icônes cassées). La vérification des droits d'accès aux fichiers (photos, logos, vidéos, images de rapport) ne connaissait que l'admin et le joueur propriétaire ; elle inclut désormais aussi les collaborateurs, qui peuvent légitimement tout voir en lecture seule. Corrigé sur les cinq routes concernées.
+- **Nouvel accès demandé par l'agence** : sur la fiche d'un joueur, les collaborateurs disposent maintenant d'un bouton "Voir l'aperçu complet" qui ouvre exactement le même espace que celui que l'agence peut prévisualiser ("Voir comme le joueur") — les 5 onglets Profil, Matchs, Analyses, Data et Progression, avec le radar de compétences, la courbe d'évolution de la note et les notes détaillées de chaque match. Strictement en lecture seule (aucun champ modifiable, aucune icône réglages) ; réutilise le même code déjà validé qui alimente l'espace joueur réel et l'aperçu admin, sans rien dupliquer.
+- Testé en profondeur : chargement des photos et logos côté collaborateur (avant/après correction), accès au nouvel aperçu avec données réelles (radar affiché correctement, notes visibles), aucun champ modifiable, aucun accès aux réglages, sécurité (visiteur non connecté toujours bloqué), et non-régression de l'aperçu admin existant.
+- Toujours aucune route supprimée, aucune fonctionnalité retirée, aucune donnée existante modifiée.
+
 ## Version de référence (avant refonte)
 
 Point de sauvegarde correspondant à la version en ligne avant le début de la refonte (animations joueur, recadrage photo, tableau de bord avec statistiques). Commit local de sauvegarde : "backup avant refonte UI KSM LABS".

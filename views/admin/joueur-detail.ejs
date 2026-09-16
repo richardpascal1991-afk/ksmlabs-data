@@ -38,6 +38,13 @@
 <% } %>
 
 <% if (ro) { %>
+<div class="alert alert-info" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+  <span>Voir les diagrammes, les notes match par match et la progression de <%= player.prenom %>.</span>
+  <a class="btn btn-small btn-secondary" href="/collaborateur/joueurs/<%= player.id %>/apercu" target="_blank" rel="noopener">Voir l'aperçu complet</a>
+</div>
+<% } %>
+
+<% if (ro) { %>
 <div class="card">
   <h3 style="margin-top:0;">Informations</h3>
   <p><strong>Poste :</strong> <%= player.poste || 'non renseigné' %></p>

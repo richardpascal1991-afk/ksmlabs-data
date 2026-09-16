@@ -17,9 +17,10 @@ router.get("/rapport-image/:imageId", (req, res) => {
   if (!report) return res.status(404).render("404");
 
   const isAdmin = !!(req.session && req.session.adminId);
+  const isCollaborateur = !!(req.session && req.session.isCollaborateur);
   const isOwningPlayer = !!(req.session && req.session.playerId === report.player_id);
 
-  if (!isAdmin && !isOwningPlayer) {
+  if (!isAdmin && !isCollaborateur && !isOwningPlayer) {
     return res.status(403).render("404");
   }
 
@@ -39,9 +40,10 @@ router.get("/rapport-video/:videoId", (req, res) => {
   if (!report) return res.status(404).render("404");
 
   const isAdmin = !!(req.session && req.session.adminId);
+  const isCollaborateur = !!(req.session && req.session.isCollaborateur);
   const isOwningPlayer = !!(req.session && req.session.playerId === report.player_id);
 
-  if (!isAdmin && !isOwningPlayer) {
+  if (!isAdmin && !isCollaborateur && !isOwningPlayer) {
     return res.status(403).render("404");
   }
 
@@ -58,9 +60,10 @@ router.get("/video-corrective/:videoId", (req, res) => {
   if (!video || !video.filename) return res.status(404).render("404");
 
   const isAdmin = !!(req.session && req.session.adminId);
+  const isCollaborateur = !!(req.session && req.session.isCollaborateur);
   const isOwningPlayer = !!(req.session && req.session.playerId === video.player_id);
 
-  if (!isAdmin && !isOwningPlayer) {
+  if (!isAdmin && !isCollaborateur && !isOwningPlayer) {
     return res.status(403).render("404");
   }
 
@@ -76,8 +79,9 @@ router.get("/joueur-photo/:playerId", (req, res) => {
   if (!player || !player.photo_filename) return res.status(404).render("404");
 
   const isAdmin = !!(req.session && req.session.adminId);
+  const isCollaborateur = !!(req.session && req.session.isCollaborateur);
   const isOwningPlayer = !!(req.session && req.session.playerId === player.id);
-  if (!isAdmin && !isOwningPlayer) {
+  if (!isAdmin && !isCollaborateur && !isOwningPlayer) {
     return res.status(403).render("404");
   }
 
@@ -93,8 +97,9 @@ router.get("/club-logo/:playerId", (req, res) => {
   if (!player || !player.club_logo_filename) return res.status(404).render("404");
 
   const isAdmin = !!(req.session && req.session.adminId);
+  const isCollaborateur = !!(req.session && req.session.isCollaborateur);
   const isOwningPlayer = !!(req.session && req.session.playerId === player.id);
-  if (!isAdmin && !isOwningPlayer) {
+  if (!isAdmin && !isCollaborateur && !isOwningPlayer) {
     return res.status(403).render("404");
   }
 
